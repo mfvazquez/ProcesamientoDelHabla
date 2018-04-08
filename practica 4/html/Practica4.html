@@ -1,0 +1,197 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Pr&aacute;ctica 4: Linear Predictive Coding(LPC)</title><meta name="generator" content="MATLAB 9.1"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2018-04-08"><meta name="DC.source" content="Practica4.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>Pr&aacute;ctica 4: Linear Predictive Coding(LPC)</h1><!--introduction--><p>V&aacute;zquez Mat&iacute;as - Padron:91523 - <tt>mfvazquezfiuba@gmail.com</tt></p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">LPC y la envolvente del espectro</a></li><li><a href="#2">Constantes utilizadas</a></li><li><a href="#3">S_estimado</a></li><li><a href="#4">FFT</a></li><li><a href="#5">ERROR</a></li></ul></div><h2 id="1">LPC y la envolvente del espectro</h2><p>Se realizar&aacute; un chequeo aplicando LPC a una secci&oacute;n espec&iacute;fica de ancho temporal fijo sobre una se&ntilde;al, para observar la envolvente del espectro.</p><h2 id="2">Constantes utilizadas</h2><div><ul><li><tt>ventana</tt>: el ancho de la ventana utiliaza, en mseg.</li><li><tt>ancho</tt>: es la cantidad de elementos del audio que componen 25 mseg de audio.</li><li><tt>inicio</tt>: subindice a partir del cual se aplica la ventana.</li><li><tt>M</tt>: numero de coeficientes utilizados</li></ul></div><pre class="codeinput">close <span class="string">all</span>
+clear
+
+[audio, Fs] = audioread(<span class="string">'fantasia.wav'</span>);
+
+ventana = 25e-3;
+ancho =  ventana  * Fs;
+
+inicio = 14000;
+M = 20;
+S = audio(inicio:inicio+ancho-1);
+
+t = 0:1/Fs:ventana-1/Fs;
+f = 0:Fs/ancho:Fs - Fs/ancho;
+</pre><h2 id="3">S_estimado</h2><pre class="codeinput">autocorrelacion = xcorr(S);
+rho = autocorrelacion(ancho:ancho+M-1);   <span class="comment">% rho = [rho(0) rho(1) ... rho(M)]</span>
+
+subindices = toeplitz(1:M-1);
+R = rho(subindices);
+
+B= R\rho(2:M);  <span class="comment">% inv(R) * rho(2:M)</span>
+
+S_estimado = filter([0; B],1 ,S); <span class="comment">% Filter es un filtro causal</span>
+
+figure
+plot(t, S,<span class="string">'b'</span>)
+hold <span class="string">on</span>
+plot(t, S_estimado,<span class="string">'r'</span>);
+</pre><img vspace="5" hspace="5" src="Practica4_01.png" alt=""> <h2 id="4">FFT</h2><pre class="codeinput">G = sqrt( rho(1) -  B' * rho(2:end));
+
+fft_S = abs(fft(S));
+fft_S_estimado = abs(freqz(G,[1;-B], ancho, <span class="string">'whole'</span>));
+
+figure
+plot(f(1:ancho/2),fft_S(1:ancho/2),<span class="string">'b'</span>)
+hold <span class="string">on</span>
+plot(f(1:ancho/2),fft_S_estimado(1:ancho/2),<span class="string">'r'</span>);
+legend(<span class="string">'FFT(S)'</span>, <span class="string">'FFT(S estimada)'</span>)
+</pre><img vspace="5" hspace="5" src="Practica4_02.png" alt=""> <h2 id="5">ERROR</h2><pre class="codeinput">error = S_estimado-S;
+figure
+plot(t,error);
+legend(<span class="string">'error'</span>)
+
+[error, zf] = filter([-1;B], 1, S);
+figure
+plot(t,error);
+legend(<span class="string">'error'</span>)
+</pre><img vspace="5" hspace="5" src="Practica4_03.png" alt=""> <img vspace="5" hspace="5" src="Practica4_04.png" alt=""> <p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2016b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% Práctica 4: Linear Predictive Coding(LPC)
+% Vázquez Matías - 
+% Padron:91523 - 
+% |mfvazquezfiuba@gmail.com|
+
+%% LPC y la envolvente del espectro
+% Se realizará un chequeo aplicando LPC a una sección específica
+% de ancho temporal fijo sobre una señal, para observar la envolvente
+% del espectro. 
+
+%% Constantes utilizadas
+% 
+% * |ventana|: el ancho de la ventana utiliaza, en mseg.
+% * |ancho|: es la cantidad de elementos del audio que componen 25 mseg de audio.
+% * |inicio|: subindice a partir del cual se aplica la ventana. 
+% * |M|: numero de coeficientes utilizados
+
+close all
+clear
+
+[audio, Fs] = audioread('fantasia.wav');
+
+ventana = 25e-3;
+ancho =  ventana  * Fs;
+
+inicio = 14000;
+M = 20;
+S = audio(inicio:inicio+ancho-1);
+
+t = 0:1/Fs:ventana-1/Fs;
+f = 0:Fs/ancho:Fs - Fs/ancho;
+
+
+%% S_estimado
+
+autocorrelacion = xcorr(S);
+rho = autocorrelacion(ancho:ancho+M-1);   % rho = [rho(0) rho(1) ... rho(M)]
+
+subindices = toeplitz(1:M-1);
+R = rho(subindices);
+
+B= R\rho(2:M);  % inv(R) * rho(2:M)
+
+S_estimado = filter([0; B],1 ,S); % Filter es un filtro causal
+
+figure
+plot(t, S,'b')
+hold on
+plot(t, S_estimado,'r');
+
+
+%% FFT
+
+G = sqrt( rho(1) -  B' * rho(2:end));
+
+fft_S = abs(fft(S));
+fft_S_estimado = abs(freqz(G,[1;-B], ancho, 'whole'));
+
+figure
+plot(f(1:ancho/2),fft_S(1:ancho/2),'b')
+hold on
+plot(f(1:ancho/2),fft_S_estimado(1:ancho/2),'r');
+legend('FFT(S)', 'FFT(S estimada)')
+
+
+%% ERROR
+
+error = S_estimado-S;
+figure
+plot(t,error);
+legend('error')
+
+[error, zf] = filter([-1;B], 1, S);
+figure
+plot(t,error);
+legend('error')
+
+
+##### SOURCE END #####
+--></body></html>

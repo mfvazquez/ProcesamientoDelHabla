@@ -1,6 +1,9 @@
-function salida = codificar(error, coeficientes, ancho, zf)
-    % ZF son las condiciones iniciales
-
+%% Sintetizar
+% Funcion que sintetiza una señal mediante el error y los coeficientes LPC.
+% ancho es el ancho de la ventana utilizada, y zf las condiciones
+% iniciales.
+function salida = sintetizar(error, coeficientes, ancho, zf)
+    
     inicios = 1:ancho:length(error)-ancho;
     salida = [];
     for x = 1:length(inicios)

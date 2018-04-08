@@ -66,7 +66,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style></head><body><div class="content"><h1>Pr&aacute;ctica 4: Linear Predictive Coding(LPC)</h1><!--introduction--><p>V&aacute;zquez Mat&iacute;as - Padron:91523 - <tt>mfvazquezfiuba@gmail.com</tt></p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">LPC y la envolvente del espectro</a></li><li><a href="#2">Constantes utilizadas</a></li><li><a href="#3">S_estimado</a></li><li><a href="#4">FFT</a></li><li><a href="#5">ERROR</a></li></ul></div><h2 id="1">LPC y la envolvente del espectro</h2><p>Se realizar&aacute; un chequeo aplicando LPC a una secci&oacute;n espec&iacute;fica de ancho temporal fijo sobre una se&ntilde;al, para observar la envolvente del espectro.</p><h2 id="2">Constantes utilizadas</h2><div><ul><li><tt>ventana</tt>: el ancho de la ventana utiliaza, en mseg.</li><li><tt>ancho</tt>: es la cantidad de elementos del audio que componen 25 mseg de audio.</li><li><tt>inicio</tt>: subindice a partir del cual se aplica la ventana.</li><li><tt>M</tt>: numero de coeficientes utilizados</li></ul></div><pre class="codeinput">close <span class="string">all</span>
+  </style></head><body><div class="content"><h1>Pr&aacute;ctica 4: Linear Predictive Coding(LPC)</h1><!--introduction--><p>V&aacute;zquez Mat&iacute;as - Padron:91523 - <tt>mfvazquezfiuba@gmail.com</tt></p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">LPC y la envolvente del espectro: chequeo</a></li><li><a href="#2">Constantes utilizadas</a></li><li><a href="#3">Comparaci&oacute;n de la se&ntilde;al temporal y la predicha</a></li><li><a href="#4">Envolvente de la se&ntilde;al temporal y la predicha</a></li><li><a href="#5">LPC y la envolvente del espectro: An&aacute;lisis en todo el audio</a></li><li><a href="#6">Constantes utilizadas</a></li><li><a href="#7">Calculo anterior sobre toda la se&ntilde;al</a></li><li><a href="#8">Envolventes de las vocales</a></li><li><a href="#9">Comparaci&oacute;n de la superficie obtenida con el espectrograma</a></li><li><a href="#10">LPC aplicado a codificaci&oacute;n</a></li><li><a href="#11">Obtenci&oacute;n del error y sintetizado de la se&ntilde;al</a></li><li><a href="#12">Errores redondeados</a></li><li><a href="#13">Grafico de los errores y las se&ntilde;ales sintetizadas</a></li><li><a href="#14">Errores</a></li><li><a href="#15">Se&ntilde;ales sintetizadas</a></li></ul></div><h2 id="1">LPC y la envolvente del espectro: chequeo</h2><p>Se realizar&aacute; un chequeo aplicando LPC a una secci&oacute;n espec&iacute;fica de ancho temporal fijo sobre una se&ntilde;al, para observar la envolvente del espectro.</p><h2 id="2">Constantes utilizadas</h2><div><ul><li><tt>ventana</tt>: el ancho de la ventana utiliaza, en mseg.</li><li><tt>ancho</tt>: es la cantidad de elementos del audio que componen 25 mseg de audio.</li><li><tt>inicio</tt>: subindice a partir del cual se aplica la ventana.</li><li><tt>M</tt>: numero de coeficientes utilizados</li><li><tt>t</tt>: eje X de los gr&aacute;ficos en funci&oacute;n del tiempo.</li><li><tt>f</tt>: eje X de los gr&aacute;ficos en funci&oacute;n de la frecuencia.</li></ul></div><pre class="codeinput">close <span class="string">all</span>
 clear
 
 [audio, Fs] = audioread(<span class="string">'fantasia.wav'</span>);
@@ -79,8 +79,9 @@ M = 20;
 S = audio(inicio:inicio+ancho-1);
 
 t = 0:1/Fs:ventana-1/Fs;
+t = t*1e3; <span class="comment">% Paso el tiempo a mseg.</span>
 f = 0:Fs/ancho:Fs - Fs/ancho;
-</pre><h2 id="3">S_estimado</h2><pre class="codeinput">autocorrelacion = xcorr(S);
+</pre><h2 id="3">Comparaci&oacute;n de la se&ntilde;al temporal y la predicha</h2><p>Mediante la autocorrelaci&oacute;n del fragmento de audio, se obtienen los coeficientes rho, y luego con estos se obtienen los coeficientes LPC. Con estos coeficientes se obtiene la se&ntilde;al de audio predicha utilizando la funci&oacute;n <tt>filter</tt>. Luego restando la se&ntilde;al temporal y la predicha se obtiene el error. Se observa que tiene picos espaciados aproximadamente en 5 mseg. Y que tiene una amplitud m&aacute;xima de alrededor 0.07, exceptuando los primeros subindices del error ya que la se&ntilde;al temporal es un audio empezado, y la predicha se obtiene utilizando condiciones iniciales nulas.</p><pre class="codeinput">autocorrelacion = xcorr(S);
 rho = autocorrelacion(ancho:ancho+M-1);   <span class="comment">% rho = [rho(0) rho(1) ... rho(M)]</span>
 
 subindices = toeplitz(1:M-1);
@@ -94,7 +95,17 @@ figure
 plot(t, S,<span class="string">'b'</span>)
 hold <span class="string">on</span>
 plot(t, S_estimado,<span class="string">'r'</span>);
-</pre><img vspace="5" hspace="5" src="Practica4_01.png" alt=""> <h2 id="4">FFT</h2><pre class="codeinput">G = sqrt( rho(1) -  B' * rho(2:end));
+xlabel(<span class="string">'tiempo [ms]'</span>)
+ylabel(<span class="string">'Amplitud'</span>)
+legend(<span class="string">'se&ntilde;al original'</span>,<span class="string">'se&ntilde;al predicha'</span>)
+
+error = S_estimado-S;
+figure
+plot(t,error);
+legend(<span class="string">'error'</span>)
+xlabel(<span class="string">'tiempo [ms]'</span>)
+ylabel(<span class="string">'Amplitud'</span>)
+</pre><img vspace="5" hspace="5" src="Practica4_01.png" style="width:560px;height:420px;" alt=""> <img vspace="5" hspace="5" src="Practica4_02.png" style="width:560px;height:420px;" alt=""> <h2 id="4">Envolvente de la se&ntilde;al temporal y la predicha</h2><p>Se muestra un gr&aacute;fico de la envolvente del espectro del audio ventaneado. Para la se&ntilde;al temporal se usa la funci&oacute;n <tt>fft</tt> mientras que para la predicha se usa la funci&oacute;n <tt>freqz</tt> que devuelve la respuesta en frecuencia del filtro. Se verifica que el primer pico se encuentra en los 720Hz, por lo que esta secci&oacute;n de audio se tratar&iacute;a de la vocal <tt>a</tt>.</p><pre class="codeinput">G = sqrt( rho(1) -  B' * rho(2:end));
 
 fft_S = abs(fft(S));
 fft_S_estimado = abs(freqz(G,[1;-B], ancho, <span class="string">'whole'</span>));
@@ -104,23 +115,182 @@ plot(f(1:ancho/2),fft_S(1:ancho/2),<span class="string">'b'</span>)
 hold <span class="string">on</span>
 plot(f(1:ancho/2),fft_S_estimado(1:ancho/2),<span class="string">'r'</span>);
 legend(<span class="string">'FFT(S)'</span>, <span class="string">'FFT(S estimada)'</span>)
-</pre><img vspace="5" hspace="5" src="Practica4_02.png" alt=""> <h2 id="5">ERROR</h2><pre class="codeinput">error = S_estimado-S;
-figure
-plot(t,error);
-legend(<span class="string">'error'</span>)
+xlabel(<span class="string">'Frecuencia [Hz]'</span>)
+ylabel(<span class="string">'Amplitud'</span>)
+</pre><img vspace="5" hspace="5" src="Practica4_03.png" style="width:560px;height:420px;" alt=""> <h2 id="5">LPC y la envolvente del espectro: An&aacute;lisis en todo el audio</h2><p>Se realizar&aacute; el mismo an&aacute;lisis que en el intervalo de 25mseg anterior pero a todo el audio. Se recorrer&aacute; el audio cada 10mseg aplicando ventanas de 25mseg para obtener la envolvente del espectro en cada secci&oacute;n, de forma de obtener una superficie que ser&aacute; semejante a un espectrograma.</p><h2 id="6">Constantes utilizadas</h2><div><ul><li><tt>paso</tt>: intervalo en tiempo que hay entre cada secci&oacute;n de audio tomada.</li><li><tt>inicios</tt>: vector con la posici&oacute;n del audio donde se inicia el analisis.</li></ul></div><pre class="codeinput">clearvars <span class="string">-except</span> <span class="string">audio</span> <span class="string">Fs</span> <span class="string">M</span> <span class="string">ventana</span> <span class="string">ancho</span>
 
-[error, zf] = filter([-1;B], 1, S);
+paso = 10e-3;
+inicios = 1:paso*Fs:length(audio)-ancho;
+</pre><h2 id="7">Calculo anterior sobre toda la se&ntilde;al</h2><pre class="codeinput"><span class="keyword">for</span> x = 1:length(inicios)
+
+    S = audio(inicios(x):inicios(x)+ancho-1);
+
+    <span class="comment">% S_estimado</span>
+    autocorrelacion = xcorr(S);
+    rho = autocorrelacion(ancho:ancho+M-1);   <span class="comment">% rho = [rho(0) rho(1) ... rho(M)]</span>
+
+    subindices = toeplitz(1:M-1);
+    R = rho(subindices);
+    B= R\rho(2:M);  <span class="comment">% inv(R) * rho(2:M)</span>
+    coeficientes(:,x) = B;
+
+    <span class="comment">% FFT</span>
+    G = sqrt( rho(1) -  B' * rho(2:end));
+    fft_S_estimado_actual = abs(freqz(G,[1;-B], ancho, <span class="string">'whole'</span>));
+    fft_S_estimado(:,x) = fft_S_estimado_actual(1:ancho/2);
+
+<span class="keyword">end</span>
+</pre><h2 id="8">Envolventes de las vocales</h2><p>Se graficara la envolvente de cada vocal del audio. Se observa que las vocales <tt>a</tt> contienen su primer formante alrededor de los 750Hz y la <tt>i</tt> alrededor de los 350 Hz.</p><pre class="codeinput">subindices = [72 90 124 135];
+f = 0:Fs/ancho:Fs - Fs/ancho;
+
 figure
-plot(t,error);
-legend(<span class="string">'error'</span>)
-</pre><img vspace="5" hspace="5" src="Practica4_03.png" alt=""> <img vspace="5" hspace="5" src="Practica4_04.png" alt=""> <p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2016b</a><br></p></div><!--
+<span class="keyword">for</span> x = subindices
+    plot(f(1:ancho/2),fft_S_estimado(:,x))
+    hold <span class="string">on</span>
+<span class="keyword">end</span>
+legend(<span class="string">'a'</span>,<span class="string">'a'</span>,<span class="string">'i'</span>,<span class="string">'a'</span>)
+xlabel(<span class="string">'Frecuencia [Hz]'</span>)
+ylabel(<span class="string">'Amplitud'</span>)
+xlim([0 4e3])
+</pre><img vspace="5" hspace="5" src="Practica4_04.png" style="width:560px;height:420px;" alt=""> <h2 id="9">Comparaci&oacute;n de la superficie obtenida con el espectrograma</h2><p>Se grafica el espectrograma del audio junto al gr&aacute;fico de la superficie obtenida. Como es de esperarse, la superficie obtenida esta compuesta por curvas mas suaves que las obtenidas mediante DFT.</p><pre class="codeinput">Noverlap = Fs*(ventana-paso)/2;
+
+figure
+spectrogram(audio, hanning(ancho) ,Noverlap, length(audio), Fs, <span class="string">'yaxis'</span>)
+colormap <span class="string">winter</span>
+xlabel(<span class="string">'Tiempo [seg]'</span>)
+ylabel(<span class="string">'Frecuencia [kHz]'</span>)
+
+t = (inicios-1)/Fs;
+
+figure
+surf(t,f(1:ancho/2)/1e3,log10(fft_S_estimado))
+colormap <span class="string">winter</span>
+shading <span class="string">interp</span>
+set(gca,<span class="string">'xlim'</span>,[0 t(end)+paso], <span class="string">'ylim'</span>, [0 Fs/2e3]);
+view(2)
+xlabel(<span class="string">'Tiempo [seg]'</span>)
+ylabel(<span class="string">'Frecuencia [kHz]'</span>)
+</pre><img vspace="5" hspace="5" src="Practica4_05.png" style="width:560px;height:420px;" alt=""> <img vspace="5" hspace="5" src="Practica4_06.png" style="width:560px;height:420px;" alt=""> <h2 id="10">LPC aplicado a codificaci&oacute;n</h2><p>Se realizar&aacute;n simulaciones de la aplicacion de LPC para codificaci&oacute;n. Hasta ahora se ha dividido la informaci&oacute;n de la se&ntilde;al en los coeficientes que dan informaci&oacute;n del espectro de la se&ntilde;al y la informaci&oacute;n del error de predicci&oacute;n. A partir del error y los coeficientes se construir&aacute; la se&ntilde;al original.</p><h2 id="11">Obtenci&oacute;n del error y sintetizado de la se&ntilde;al</h2><p>Mediante la funci&oacute;n <tt>filter</tt> se obtiene el error de cada segmento de la se&ntilde;al. Se aplicar&aacute; solo a porciones de audio de 10mseg, ya que al filtrar 25mseg pero luego tomar solo 10mseg de error, el error es mayor. Luego se utiliza la funci&oacute;n <tt>sintetizar</tt> que reconstruye el audio en base al error y los coeficientes. Se observa que el audio original y el sintetizado son exactamente iguales, a excepcion de los primeros subindices por las condiciones iniciales nulas utilizadas. Finalmente se grafica un zoom de la se&ntilde;al para que se pueda apreciar que las se&ntilde;ales son exactamente iguales.</p><pre class="codeinput">zf = zeros(M-1,1); <span class="comment">% condiciones iniciales</span>
+error = [];
+<span class="keyword">for</span> x = 1:length(inicios)
+
+    S = audio(inicios(x):inicios(x)+paso*Fs-1);
+    [error_actual, zf] = filter([-1;coeficientes(:,x)], 1, S, zf);
+    error = [error error_actual'];
+
+<span class="keyword">end</span>
+
+S_recibida = sintetizar(error, coeficientes, Fs*paso, zf);
+t_audio_sintetizado = 0:1/Fs:length(S_recibida)/Fs - 1/Fs;
+
+figure
+plot(t_audio_sintetizado, S_recibida)
+hold <span class="string">on</span>
+plot(t_audio_sintetizado, audio(1:length(t_audio_sintetizado)))
+legend(<span class="string">'audio recibido'</span>,<span class="string">'audio original'</span>)
+xlabel(<span class="string">'Tiempo [seg]'</span>)
+ylabel(<span class="string">'Amplitud'</span>)
+
+figure
+plot(t_audio_sintetizado, S_recibida)
+hold <span class="string">on</span>
+plot(t_audio_sintetizado, audio(1:length(t_audio_sintetizado)))
+legend(<span class="string">'audio recibido'</span>,<span class="string">'audio original'</span>)
+xlabel(<span class="string">'Tiempo [seg]'</span>)
+ylabel(<span class="string">'Amplitud'</span>)
+xlim([1.35 1.4])
+</pre><img vspace="5" hspace="5" src="Practica4_07.png" style="width:560px;height:420px;" alt=""> <img vspace="5" hspace="5" src="Practica4_08.png" style="width:560px;height:420px;" alt=""> <h2 id="12">Errores redondeados</h2><p>A continuaci&oacute;n se redondear&aacute; a punto fijo de 8, 6 y 4 bits y se sintetizar&aacute; nuevamente la se&ntilde;al. Para esto se utilizar&aacute;n las funciones implementadas <tt>redondear</tt> y <tt>sintetizar</tt>. Finalmente se graficar&aacute;n las se&ntilde;ales sintetizadas y se reproducira un audio para comparar dichas se&ntilde;ales. En el audio se reproducir&aacute; primero el audio original, luego el audio sintetizado sin redondear y finalmente los audios sintetizados de 8, 6 y 4 bits. Ver la funci&oacute;n <a href="sintetizar.html">sintetizar</a> y  <a href="redondear.html">redondear</a> para mas detalles sobre su implementacion.</p><pre class="codeinput"><span class="comment">% Redondeando a punto fijo de 8bit</span>
+error_8bit = redondear(error, 8);
+S_recibida_8bit = sintetizar(error_8bit, coeficientes, Fs*paso, zf);
+
+<span class="comment">% Redondeando a punto fijo de 6bit</span>
+error_6bit = redondear(error, 6);
+S_recibida_6bit = sintetizar(error_6bit, coeficientes, Fs*paso, zf);
+
+
+<span class="comment">% Redondeando a punto fijo de 4bit</span>
+error_4bit = redondear(error, 4);
+S_recibida_4bit = sintetizar(error_4bit, coeficientes, Fs*paso, zf);
+t_error = 0:1/Fs:(length(error)-1)/Fs;
+
+<span class="comment">% Reproduzco los audios</span>
+sound([audio' S_recibida S_recibida_8bit S_recibida_6bit S_recibida_4bit], Fs);
+
+t_salida = 0:1/Fs:(length(S_recibida)-1)/Fs;
+
+bits_totales_16bit = length(error) * 16;
+bits_ahorrados_8bit = bits_totales_16bit - length(error_8bit)*8;
+bits_ahorrados_6bit = bits_totales_16bit - length(error_6bit)*6;
+bits_ahorrados_4bit = bits_totales_16bit - length(error_4bit)*4;
+
+<span class="comment">% Los paso a Kbits;</span>
+bits_ahorrados_8bit = bits_ahorrados_8bit * 1e-3;
+bits_ahorrados_6bit = bits_ahorrados_6bit * 1e-3;
+bits_ahorrados_4bit = bits_ahorrados_4bit * 1e-3;
+
+
+disp([<span class="string">'Bits ahorrados utilizando 8 bits = '</span> num2str(bits_ahorrados_8bit) <span class="string">' kbit'</span>]);
+disp([<span class="string">'Bits ahorrados utilizando 6 bits = '</span> num2str(bits_ahorrados_6bit) <span class="string">' kbit'</span>]);
+disp([<span class="string">'Bits ahorrados utilizando 4 bits = '</span> num2str(bits_ahorrados_4bit) <span class="string">' kbit'</span>]);
+</pre><pre class="codeoutput">Bits ahorrados utilizando 8 bits = 343.04 kbit
+Bits ahorrados utilizando 6 bits = 428.8 kbit
+Bits ahorrados utilizando 4 bits = 514.56 kbit
+</pre><h2 id="13">Grafico de los errores y las se&ntilde;ales sintetizadas</h2><p>A continuacion se grafican los errores con distintos redondeos para poder compararlos con el original. Se grafica el error total y en una porcion de la se&ntilde;al para tener una mejor visualizaci&oacute;n. Luego se realiza lo mismo pero con las se&ntilde;ales sintetizadas.</p><h2 id="14">Errores</h2><pre class="codeinput">figure
+plot(t_error,error)
+hold <span class="string">on</span>
+plot(t_error,error_8bit)
+hold <span class="string">on</span>
+plot(t_error,error_6bit)
+hold <span class="string">on</span>
+plot(t_error,error_4bit)
+legend(<span class="string">'error original'</span>, <span class="string">'error 8bit'</span>, <span class="string">'error 6bit'</span>, <span class="string">'error 4bit'</span>);
+xlabel(<span class="string">'Tiempo [seg]'</span>)
+ylabel(<span class="string">'Amplitud'</span>)
+
+figure
+plot(t_error,error)
+hold <span class="string">on</span>
+plot(t_error,error_8bit)
+hold <span class="string">on</span>
+plot(t_error,error_6bit)
+hold <span class="string">on</span>
+plot(t_error,error_4bit)
+legend(<span class="string">'error original'</span>, <span class="string">'error 8bit'</span>, <span class="string">'error 6bit'</span>, <span class="string">'error 4bit'</span>);
+xlabel(<span class="string">'Tiempo [seg]'</span>)
+ylabel(<span class="string">'Amplitud'</span>)
+xlim([1.35 1.36])
+</pre><img vspace="5" hspace="5" src="Practica4_09.png" style="width:560px;height:420px;" alt=""> <img vspace="5" hspace="5" src="Practica4_10.png" style="width:560px;height:420px;" alt=""> <h2 id="15">Se&ntilde;ales sintetizadas</h2><pre class="codeinput">figure
+plot(t_salida, S_recibida)
+hold <span class="string">on</span>
+plot(t_salida,S_recibida_8bit)
+hold <span class="string">on</span>
+plot(t_salida,S_recibida_6bit)
+hold <span class="string">on</span>
+plot(t_salida,S_recibida_4bit)
+legend(<span class="string">'sintetizado double'</span>, <span class="string">'sintetizado 8bit'</span>, <span class="string">'sintetizado 6bit'</span>, <span class="string">'sintetizado 4bit'</span>);
+xlabel(<span class="string">'Tiempo [seg]'</span>)
+ylabel(<span class="string">'Amplitud'</span>)
+
+figure
+plot(t_salida, S_recibida)
+hold <span class="string">on</span>
+plot(t_salida,S_recibida_8bit)
+hold <span class="string">on</span>
+plot(t_salida,S_recibida_6bit)
+hold <span class="string">on</span>
+plot(t_salida,S_recibida_4bit)
+legend(<span class="string">'sintetizado double'</span>, <span class="string">'sintetizado 8bit'</span>, <span class="string">'sintetizado 6bit'</span>, <span class="string">'sintetizado 4bit'</span>);
+xlabel(<span class="string">'Tiempo [seg]'</span>)
+ylabel(<span class="string">'Amplitud'</span>)
+xlim([1.35 1.36])
+</pre><img vspace="5" hspace="5" src="Practica4_11.png" style="width:560px;height:420px;" alt=""> <img vspace="5" hspace="5" src="Practica4_12.png" style="width:560px;height:420px;" alt=""> <p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2016b</a><br></p></div><!--
 ##### SOURCE BEGIN #####
 %% Práctica 4: Linear Predictive Coding(LPC)
 % Vázquez Matías - 
 % Padron:91523 - 
 % |mfvazquezfiuba@gmail.com|
 
-%% LPC y la envolvente del espectro
+%% LPC y la envolvente del espectro: chequeo
 % Se realizará un chequeo aplicando LPC a una sección específica
 % de ancho temporal fijo sobre una señal, para observar la envolvente
 % del espectro. 
@@ -131,6 +301,8 @@ legend(<span class="string">'error'</span>)
 % * |ancho|: es la cantidad de elementos del audio que componen 25 mseg de audio.
 % * |inicio|: subindice a partir del cual se aplica la ventana. 
 % * |M|: numero de coeficientes utilizados
+% * |t|: eje X de los gráficos en función del tiempo.
+% * |f|: eje X de los gráficos en función de la frecuencia.
 
 close all
 clear
@@ -145,10 +317,20 @@ M = 20;
 S = audio(inicio:inicio+ancho-1);
 
 t = 0:1/Fs:ventana-1/Fs;
+t = t*1e3; % Paso el tiempo a mseg.
 f = 0:Fs/ancho:Fs - Fs/ancho;
 
 
-%% S_estimado
+%% Comparación de la señal temporal y la predicha
+% Mediante la autocorrelación del fragmento de audio, se obtienen los
+% coeficientes rho, y luego con estos se obtienen los coeficientes LPC.
+% Con estos coeficientes se obtiene la señal de audio predicha utilizando
+% la función |filter|.
+% Luego restando la señal temporal y la predicha se obtiene el error.
+% Se observa que tiene picos espaciados aproximadamente en 5 mseg.
+% Y que tiene una amplitud máxima de alrededor 0.07, exceptuando los
+% primeros subindices del error ya que la señal temporal es un audio
+% empezado, y la predicha se obtiene utilizando condiciones iniciales nulas.
 
 autocorrelacion = xcorr(S);
 rho = autocorrelacion(ancho:ancho+M-1);   % rho = [rho(0) rho(1) ... rho(M)]
@@ -164,9 +346,25 @@ figure
 plot(t, S,'b')
 hold on
 plot(t, S_estimado,'r');
+xlabel('tiempo [ms]')
+ylabel('Amplitud')
+legend('señal original','señal predicha')
+
+error = S_estimado-S;
+figure
+plot(t,error);
+legend('error')
+xlabel('tiempo [ms]')
+ylabel('Amplitud')
 
 
-%% FFT
+%% Envolvente de la señal temporal y la predicha
+% Se muestra un gráfico de la envolvente del espectro del audio ventaneado.
+% Para la señal temporal se usa la función |fft| mientras que para la
+% predicha se usa la función |freqz| que devuelve la respuesta en
+% frecuencia del filtro.
+% Se verifica que el primer pico se encuentra en los 720Hz, por lo que
+% esta sección de audio se trataría de la vocal |a|. 
 
 G = sqrt( rho(1) -  B' * rho(2:end));
 
@@ -178,20 +376,246 @@ plot(f(1:ancho/2),fft_S(1:ancho/2),'b')
 hold on
 plot(f(1:ancho/2),fft_S_estimado(1:ancho/2),'r');
 legend('FFT(S)', 'FFT(S estimada)')
+xlabel('Frecuencia [Hz]')
+ylabel('Amplitud')
 
+%% LPC y la envolvente del espectro: Análisis en todo el audio
+% Se realizará el mismo análisis que en el intervalo de 25mseg anterior
+% pero a todo el audio. Se recorrerá el audio cada 10mseg aplicando
+% ventanas de 25mseg para obtener la envolvente del espectro en cada
+% sección, de forma de obtener una superficie que será semejante a un
+% espectrograma.
 
-%% ERROR
+%% Constantes utilizadas
+% 
+% * |paso|: intervalo en tiempo que hay entre cada sección de audio tomada.
+% * |inicios|: vector con la posición del audio donde se inicia el
+% analisis.
 
-error = S_estimado-S;
+clearvars -except audio Fs M ventana ancho
+
+paso = 10e-3;
+inicios = 1:paso*Fs:length(audio)-ancho;
+
+%% Calculo anterior sobre toda la señal
+
+for x = 1:length(inicios)
+
+    S = audio(inicios(x):inicios(x)+ancho-1);
+
+    % S_estimado
+    autocorrelacion = xcorr(S);
+    rho = autocorrelacion(ancho:ancho+M-1);   % rho = [rho(0) rho(1) ... rho(M)]
+
+    subindices = toeplitz(1:M-1);
+    R = rho(subindices);
+    B= R\rho(2:M);  % inv(R) * rho(2:M)
+    coeficientes(:,x) = B;
+        
+    % FFT
+    G = sqrt( rho(1) -  B' * rho(2:end));
+    fft_S_estimado_actual = abs(freqz(G,[1;-B], ancho, 'whole'));
+    fft_S_estimado(:,x) = fft_S_estimado_actual(1:ancho/2);
+        
+end
+
+%% Envolventes de las vocales
+% Se graficara la envolvente de cada vocal del audio. Se observa que las
+% vocales |a| contienen su primer formante alrededor de los 750Hz y la |i|
+% alrededor de los 350 Hz.
+
+subindices = [72 90 124 135];
+f = 0:Fs/ancho:Fs - Fs/ancho;
+
 figure
-plot(t,error);
-legend('error')
+for x = subindices
+    plot(f(1:ancho/2),fft_S_estimado(:,x))
+    hold on
+end
+legend('a','a','i','a')
+xlabel('Frecuencia [Hz]')
+ylabel('Amplitud')
+xlim([0 4e3])
 
-[error, zf] = filter([-1;B], 1, S);
+
+%% Comparación de la superficie obtenida con el espectrograma
+% Se grafica el espectrograma del audio junto al gráfico de la superficie
+% obtenida. Como es de esperarse, la superficie obtenida esta compuesta por
+% curvas mas suaves que las obtenidas mediante DFT. 
+
+Noverlap = Fs*(ventana-paso)/2;
+
 figure
-plot(t,error);
-legend('error')
+spectrogram(audio, hanning(ancho) ,Noverlap, length(audio), Fs, 'yaxis')
+colormap winter
+xlabel('Tiempo [seg]')
+ylabel('Frecuencia [kHz]')
 
+t = (inicios-1)/Fs;
+
+figure
+surf(t,f(1:ancho/2)/1e3,log10(fft_S_estimado))
+colormap winter
+shading interp
+set(gca,'xlim',[0 t(end)+paso], 'ylim', [0 Fs/2e3]);
+view(2)
+xlabel('Tiempo [seg]')
+ylabel('Frecuencia [kHz]')
+
+%% LPC aplicado a codificación
+% Se realizarán simulaciones de la aplicacion de LPC para codificación. 
+% Hasta ahora se ha dividido la información de la señal en los coeficientes 
+% que dan información del espectro de la señal y la información del error de
+% predicción. A partir del error y los coeficientes se construirá la señal 
+% original.
+
+%% Obtención del error y sintetizado de la señal
+% Mediante la función |filter| se obtiene el error de cada segmento de la
+% señal. Se aplicará solo a porciones de audio de 10mseg, ya que al
+% filtrar 25mseg pero luego tomar solo 10mseg de error, el error es
+% mayor. Luego se utiliza la función |sintetizar| que reconstruye el audio
+% en base al error y los coeficientes. Se observa que el audio original y
+% el sintetizado son exactamente iguales, a excepcion de los primeros
+% subindices por las condiciones iniciales nulas utilizadas.
+% Finalmente se grafica un zoom de la señal para que se pueda apreciar que 
+% las señales son exactamente iguales.
+
+zf = zeros(M-1,1); % condiciones iniciales
+error = [];
+for x = 1:length(inicios)
+
+    S = audio(inicios(x):inicios(x)+paso*Fs-1);
+    [error_actual, zf] = filter([-1;coeficientes(:,x)], 1, S, zf);
+    error = [error error_actual'];
+    
+end
+
+S_recibida = sintetizar(error, coeficientes, Fs*paso, zf);
+t_audio_sintetizado = 0:1/Fs:length(S_recibida)/Fs - 1/Fs;
+
+figure
+plot(t_audio_sintetizado, S_recibida)
+hold on
+plot(t_audio_sintetizado, audio(1:length(t_audio_sintetizado)))
+legend('audio recibido','audio original')
+xlabel('Tiempo [seg]')
+ylabel('Amplitud')
+
+figure
+plot(t_audio_sintetizado, S_recibida)
+hold on
+plot(t_audio_sintetizado, audio(1:length(t_audio_sintetizado)))
+legend('audio recibido','audio original')
+xlabel('Tiempo [seg]')
+ylabel('Amplitud')
+xlim([1.35 1.4])
+
+%% Errores redondeados
+% A continuación se redondeará a punto fijo de 8, 6 y 4 bits y se
+% sintetizará nuevamente la señal. Para esto se utilizarán las funciones
+% implementadas |redondear| y |sintetizar|.
+% Finalmente se graficarán las señales
+% sintetizadas y se reproducira un audio para comparar dichas señales. En
+% el audio se reproducirá primero el audio original, luego el audio
+% sintetizado sin redondear y finalmente los audios sintetizados de 8, 6 y
+% 4 bits.
+% Ver la función <sintetizar.html sintetizar> y  <redondear.html redondear>
+% para mas detalles sobre su implementacion.
+
+% Redondeando a punto fijo de 8bit
+error_8bit = redondear(error, 8);
+S_recibida_8bit = sintetizar(error_8bit, coeficientes, Fs*paso, zf);
+
+% Redondeando a punto fijo de 6bit
+error_6bit = redondear(error, 6);
+S_recibida_6bit = sintetizar(error_6bit, coeficientes, Fs*paso, zf);
+
+
+% Redondeando a punto fijo de 4bit
+error_4bit = redondear(error, 4);
+S_recibida_4bit = sintetizar(error_4bit, coeficientes, Fs*paso, zf);
+t_error = 0:1/Fs:(length(error)-1)/Fs;
+
+% Reproduzco los audios
+sound([audio' S_recibida S_recibida_8bit S_recibida_6bit S_recibida_4bit], Fs);
+
+t_salida = 0:1/Fs:(length(S_recibida)-1)/Fs;
+
+bits_totales_16bit = length(error) * 16;
+bits_ahorrados_8bit = bits_totales_16bit - length(error_8bit)*8;
+bits_ahorrados_6bit = bits_totales_16bit - length(error_6bit)*6;
+bits_ahorrados_4bit = bits_totales_16bit - length(error_4bit)*4;
+
+% Los paso a Kbits;
+bits_ahorrados_8bit = bits_ahorrados_8bit * 1e-3;
+bits_ahorrados_6bit = bits_ahorrados_6bit * 1e-3;
+bits_ahorrados_4bit = bits_ahorrados_4bit * 1e-3;
+
+
+disp(['Bits ahorrados utilizando 8 bits = ' num2str(bits_ahorrados_8bit) ' kbit']);
+disp(['Bits ahorrados utilizando 6 bits = ' num2str(bits_ahorrados_6bit) ' kbit']);
+disp(['Bits ahorrados utilizando 4 bits = ' num2str(bits_ahorrados_4bit) ' kbit']);
+
+
+%% Grafico de los errores y las señales sintetizadas
+% A continuacion se grafican los errores con distintos redondeos para poder
+% compararlos con el original. Se grafica el error total y en una porcion
+% de la señal para tener una mejor visualización. Luego se realiza lo mismo
+% pero con las señales sintetizadas.
+
+%% Errores
+
+figure
+plot(t_error,error)
+hold on
+plot(t_error,error_8bit)
+hold on
+plot(t_error,error_6bit)
+hold on
+plot(t_error,error_4bit)
+legend('error original', 'error 8bit', 'error 6bit', 'error 4bit');
+xlabel('Tiempo [seg]')
+ylabel('Amplitud')
+
+figure
+plot(t_error,error)
+hold on
+plot(t_error,error_8bit)
+hold on
+plot(t_error,error_6bit)
+hold on
+plot(t_error,error_4bit)
+legend('error original', 'error 8bit', 'error 6bit', 'error 4bit');
+xlabel('Tiempo [seg]')
+ylabel('Amplitud')
+xlim([1.35 1.36])
+
+%% Señales sintetizadas
+
+figure
+plot(t_salida, S_recibida)
+hold on
+plot(t_salida,S_recibida_8bit)
+hold on
+plot(t_salida,S_recibida_6bit)
+hold on
+plot(t_salida,S_recibida_4bit)
+legend('sintetizado double', 'sintetizado 8bit', 'sintetizado 6bit', 'sintetizado 4bit');
+xlabel('Tiempo [seg]')
+ylabel('Amplitud')
+
+figure
+plot(t_salida, S_recibida)
+hold on
+plot(t_salida,S_recibida_8bit)
+hold on
+plot(t_salida,S_recibida_6bit)
+hold on
+plot(t_salida,S_recibida_4bit)
+legend('sintetizado double', 'sintetizado 8bit', 'sintetizado 6bit', 'sintetizado 4bit');
+xlabel('Tiempo [seg]')
+ylabel('Amplitud')
+xlim([1.35 1.36])
 
 ##### SOURCE END #####
 --></body></html>

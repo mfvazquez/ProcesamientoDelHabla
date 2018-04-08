@@ -1,3 +1,7 @@
+%% Redondear
+% Funcion redondea a punto fijo a una precisión dada por el numero de bits
+% ingresados.
+
 function vector_redondeado = redondear(vector, numero_de_bits)
 
     precision = 2^numero_de_bits-1;

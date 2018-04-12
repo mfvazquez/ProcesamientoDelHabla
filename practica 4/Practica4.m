@@ -329,3 +329,16 @@ legend('sintetizado double', 'sintetizado 8bit', 'sintetizado 6bit', 'sintetizad
 xlabel('Tiempo [seg]')
 ylabel('Amplitud')
 xlim([1.35 1.36])
+
+%% error pos sintetizado
+
+error8 = audio(1:length(S_recibida))' - S_recibida_8bit;
+error6 = audio(1:length(S_recibida))' - S_recibida_6bit;
+error4 = audio(1:length(S_recibida))' - S_recibida_4bit;
+
+figure
+plot(t_salida, error8);
+hold on
+plot(t_salida, error6);
+hold on
+plot(t_salida, error4);

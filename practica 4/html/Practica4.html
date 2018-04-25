@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>Pr&aacute;ctica 4: Linear Predictive Coding(LPC)</title><meta name="generator" content="MATLAB 9.1"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2018-04-08"><meta name="DC.source" content="Practica4.m"><style type="text/css">
+      --><title>Pr&aacute;ctica 4: Linear Predictive Coding(LPC)</title><meta name="generator" content="MATLAB 9.1"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2018-04-18"><meta name="DC.source" content="Practica4.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -66,7 +66,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style></head><body><div class="content"><h1>Pr&aacute;ctica 4: Linear Predictive Coding(LPC)</h1><!--introduction--><p>V&aacute;zquez Mat&iacute;as - Padron:91523 - <tt>mfvazquezfiuba@gmail.com</tt></p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">LPC y la envolvente del espectro: chequeo</a></li><li><a href="#2">Constantes utilizadas</a></li><li><a href="#3">Comparaci&oacute;n de la se&ntilde;al temporal y la predicha</a></li><li><a href="#4">Envolvente de la se&ntilde;al temporal y la predicha</a></li><li><a href="#5">LPC y la envolvente del espectro: An&aacute;lisis en todo el audio</a></li><li><a href="#6">Constantes utilizadas</a></li><li><a href="#7">Calculo anterior sobre toda la se&ntilde;al</a></li><li><a href="#8">Envolventes de las vocales</a></li><li><a href="#9">Comparaci&oacute;n de la superficie obtenida con el espectrograma</a></li><li><a href="#10">LPC aplicado a codificaci&oacute;n</a></li><li><a href="#11">Obtenci&oacute;n del error y sintetizado de la se&ntilde;al</a></li><li><a href="#12">Errores redondeados</a></li><li><a href="#13">Grafico de los errores y las se&ntilde;ales sintetizadas</a></li><li><a href="#14">Errores</a></li><li><a href="#15">Se&ntilde;ales sintetizadas</a></li></ul></div><h2 id="1">LPC y la envolvente del espectro: chequeo</h2><p>Se realizar&aacute; un chequeo aplicando LPC a una secci&oacute;n espec&iacute;fica de ancho temporal fijo sobre una se&ntilde;al, para observar la envolvente del espectro.</p><h2 id="2">Constantes utilizadas</h2><div><ul><li><tt>ventana</tt>: el ancho de la ventana utiliaza, en mseg.</li><li><tt>ancho</tt>: es la cantidad de elementos del audio que componen 25 mseg de audio.</li><li><tt>inicio</tt>: subindice a partir del cual se aplica la ventana.</li><li><tt>M</tt>: numero de coeficientes utilizados</li><li><tt>t</tt>: eje X de los gr&aacute;ficos en funci&oacute;n del tiempo.</li><li><tt>f</tt>: eje X de los gr&aacute;ficos en funci&oacute;n de la frecuencia.</li></ul></div><pre class="codeinput">close <span class="string">all</span>
+  </style></head><body><div class="content"><h1>Pr&aacute;ctica 4: Linear Predictive Coding(LPC)</h1><!--introduction--><p>V&aacute;zquez Mat&iacute;as - Padron:91523 - <tt>mfvazquezfiuba@gmail.com</tt></p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">LPC y la envolvente del espectro: chequeo</a></li><li><a href="#2">Constantes utilizadas</a></li><li><a href="#3">Comparaci&oacute;n de la se&ntilde;al temporal y la predicha</a></li><li><a href="#4">Envolvente de la se&ntilde;al temporal y la predicha</a></li><li><a href="#5">LPC y la envolvente del espectro: An&aacute;lisis en todo el audio</a></li><li><a href="#6">Constantes utilizadas</a></li><li><a href="#7">Calculo anterior sobre toda la se&ntilde;al</a></li><li><a href="#8">Envolventes de las vocales</a></li><li><a href="#9">Comparaci&oacute;n de la superficie obtenida con el espectrograma</a></li><li><a href="#10">LPC aplicado a codificaci&oacute;n</a></li><li><a href="#11">Obtenci&oacute;n del error y sintetizado de la se&ntilde;al</a></li><li><a href="#12">Errores redondeados</a></li><li><a href="#13">Grafico de los errores y las se&ntilde;ales sintetizadas</a></li><li><a href="#14">Errores</a></li><li><a href="#15">Se&ntilde;ales sintetizadas</a></li><li><a href="#16">error pos sintetizado</a></li></ul></div><h2 id="1">LPC y la envolvente del espectro: chequeo</h2><p>Se realizar&aacute; un chequeo aplicando LPC a una secci&oacute;n espec&iacute;fica de ancho temporal fijo sobre una se&ntilde;al, para observar la envolvente del espectro.</p><h2 id="2">Constantes utilizadas</h2><div><ul><li><tt>ventana</tt>: el ancho de la ventana utiliaza, en mseg.</li><li><tt>ancho</tt>: es la cantidad de elementos del audio que componen 25 mseg de audio.</li><li><tt>inicio</tt>: subindice a partir del cual se aplica la ventana.</li><li><tt>M</tt>: numero de coeficientes utilizados</li><li><tt>t</tt>: eje X de los gr&aacute;ficos en funci&oacute;n del tiempo.</li><li><tt>f</tt>: eje X de los gr&aacute;ficos en funci&oacute;n de la frecuencia.</li></ul></div><pre class="codeinput">close <span class="string">all</span>
 clear
 
 [audio, Fs] = audioread(<span class="string">'fantasia.wav'</span>);
@@ -105,7 +105,7 @@ plot(t,error);
 legend(<span class="string">'error'</span>)
 xlabel(<span class="string">'tiempo [ms]'</span>)
 ylabel(<span class="string">'Amplitud'</span>)
-</pre><img vspace="5" hspace="5" src="Practica4_01.png" style="width:560px;height:420px;" alt=""> <img vspace="5" hspace="5" src="Practica4_02.png" style="width:560px;height:420px;" alt=""> <h2 id="4">Envolvente de la se&ntilde;al temporal y la predicha</h2><p>Se muestra un gr&aacute;fico de la envolvente del espectro del audio ventaneado. Para la se&ntilde;al temporal se usa la funci&oacute;n <tt>fft</tt> mientras que para la predicha se usa la funci&oacute;n <tt>freqz</tt> que devuelve la respuesta en frecuencia del filtro. Se verifica que el primer pico se encuentra en los 720Hz, por lo que esta secci&oacute;n de audio se tratar&iacute;a de la vocal <tt>a</tt>.</p><pre class="codeinput">G = sqrt( rho(1) -  B' * rho(2:end));
+</pre><img vspace="5" hspace="5" src="Practica4_01.png" alt=""> <img vspace="5" hspace="5" src="Practica4_02.png" alt=""> <h2 id="4">Envolvente de la se&ntilde;al temporal y la predicha</h2><p>Se muestra un gr&aacute;fico de la envolvente del espectro del audio ventaneado. Para la se&ntilde;al temporal se usa la funci&oacute;n <tt>fft</tt> mientras que para la predicha se usa la funci&oacute;n <tt>freqz</tt> que devuelve la respuesta en frecuencia del filtro. Se verifica que el primer pico se encuentra en los 720Hz, por lo que esta secci&oacute;n de audio se tratar&iacute;a de la vocal <tt>a</tt>.</p><pre class="codeinput">G = sqrt( rho(1) -  B' * rho(2:end));
 
 fft_S = abs(fft(S));
 fft_S_estimado = abs(freqz(G,[1;-B], ancho, <span class="string">'whole'</span>));
@@ -117,7 +117,7 @@ plot(f(1:ancho/2),fft_S_estimado(1:ancho/2),<span class="string">'r'</span>);
 legend(<span class="string">'FFT(S)'</span>, <span class="string">'FFT(S estimada)'</span>)
 xlabel(<span class="string">'Frecuencia [Hz]'</span>)
 ylabel(<span class="string">'Amplitud'</span>)
-</pre><img vspace="5" hspace="5" src="Practica4_03.png" style="width:560px;height:420px;" alt=""> <h2 id="5">LPC y la envolvente del espectro: An&aacute;lisis en todo el audio</h2><p>Se realizar&aacute; el mismo an&aacute;lisis que en el intervalo de 25mseg anterior pero a todo el audio. Se recorrer&aacute; el audio cada 10mseg aplicando ventanas de 25mseg para obtener la envolvente del espectro en cada secci&oacute;n, de forma de obtener una superficie que ser&aacute; semejante a un espectrograma.</p><h2 id="6">Constantes utilizadas</h2><div><ul><li><tt>paso</tt>: intervalo en tiempo que hay entre cada secci&oacute;n de audio tomada.</li><li><tt>inicios</tt>: vector con la posici&oacute;n del audio donde se inicia el analisis.</li></ul></div><pre class="codeinput">clearvars <span class="string">-except</span> <span class="string">audio</span> <span class="string">Fs</span> <span class="string">M</span> <span class="string">ventana</span> <span class="string">ancho</span>
+</pre><img vspace="5" hspace="5" src="Practica4_03.png" alt=""> <h2 id="5">LPC y la envolvente del espectro: An&aacute;lisis en todo el audio</h2><p>Se realizar&aacute; el mismo an&aacute;lisis que en el intervalo de 25mseg anterior pero a todo el audio. Se recorrer&aacute; el audio cada 10mseg aplicando ventanas de 25mseg para obtener la envolvente del espectro en cada secci&oacute;n, de forma de obtener una superficie que ser&aacute; semejante a un espectrograma.</p><h2 id="6">Constantes utilizadas</h2><div><ul><li><tt>paso</tt>: intervalo en tiempo que hay entre cada secci&oacute;n de audio tomada.</li><li><tt>inicios</tt>: vector con la posici&oacute;n del audio donde se inicia el analisis.</li></ul></div><pre class="codeinput">clearvars <span class="string">-except</span> <span class="string">audio</span> <span class="string">Fs</span> <span class="string">M</span> <span class="string">ventana</span> <span class="string">ancho</span>
 
 paso = 10e-3;
 inicios = 1:paso*Fs:length(audio)-ancho;
@@ -152,11 +152,11 @@ legend(<span class="string">'a'</span>,<span class="string">'a'</span>,<span cla
 xlabel(<span class="string">'Frecuencia [Hz]'</span>)
 ylabel(<span class="string">'Amplitud'</span>)
 xlim([0 4e3])
-</pre><img vspace="5" hspace="5" src="Practica4_04.png" style="width:560px;height:420px;" alt=""> <h2 id="9">Comparaci&oacute;n de la superficie obtenida con el espectrograma</h2><p>Se grafica el espectrograma del audio junto al gr&aacute;fico de la superficie obtenida. Como es de esperarse, la superficie obtenida esta compuesta por curvas mas suaves que las obtenidas mediante DFT.</p><pre class="codeinput">Noverlap = Fs*(ventana-paso)/2;
+</pre><img vspace="5" hspace="5" src="Practica4_04.png" alt=""> <h2 id="9">Comparaci&oacute;n de la superficie obtenida con el espectrograma</h2><p>Se grafica el espectrograma del audio junto al gr&aacute;fico de la superficie obtenida. Como es de esperarse, la superficie obtenida esta compuesta por curvas mas suaves que las obtenidas mediante DFT.</p><pre class="codeinput">Noverlap = Fs*(ventana-paso)/2;
 
 figure
 spectrogram(audio, hanning(ancho) ,Noverlap, length(audio), Fs, <span class="string">'yaxis'</span>)
-colormap <span class="string">winter</span>
+colormap <span class="string">jet</span>
 xlabel(<span class="string">'Tiempo [seg]'</span>)
 ylabel(<span class="string">'Frecuencia [kHz]'</span>)
 
@@ -164,13 +164,13 @@ t = (inicios-1)/Fs;
 
 figure
 surf(t,f(1:ancho/2)/1e3,log10(fft_S_estimado))
-colormap <span class="string">winter</span>
+colormap <span class="string">jet</span>
 shading <span class="string">interp</span>
 set(gca,<span class="string">'xlim'</span>,[0 t(end)+paso], <span class="string">'ylim'</span>, [0 Fs/2e3]);
 view(2)
 xlabel(<span class="string">'Tiempo [seg]'</span>)
 ylabel(<span class="string">'Frecuencia [kHz]'</span>)
-</pre><img vspace="5" hspace="5" src="Practica4_05.png" style="width:560px;height:420px;" alt=""> <img vspace="5" hspace="5" src="Practica4_06.png" style="width:560px;height:420px;" alt=""> <h2 id="10">LPC aplicado a codificaci&oacute;n</h2><p>Se realizar&aacute;n simulaciones de la aplicacion de LPC para codificaci&oacute;n. Hasta ahora se ha dividido la informaci&oacute;n de la se&ntilde;al en los coeficientes que dan informaci&oacute;n del espectro de la se&ntilde;al y la informaci&oacute;n del error de predicci&oacute;n. A partir del error y los coeficientes se construir&aacute; la se&ntilde;al original.</p><h2 id="11">Obtenci&oacute;n del error y sintetizado de la se&ntilde;al</h2><p>Mediante la funci&oacute;n <tt>filter</tt> se obtiene el error de cada segmento de la se&ntilde;al. Se aplicar&aacute; solo a porciones de audio de 10mseg, ya que al filtrar 25mseg pero luego tomar solo 10mseg de error, el error es mayor. Luego se utiliza la funci&oacute;n <tt>sintetizar</tt> que reconstruye el audio en base al error y los coeficientes. Se observa que el audio original y el sintetizado son exactamente iguales, a excepcion de los primeros subindices por las condiciones iniciales nulas utilizadas. Finalmente se grafica un zoom de la se&ntilde;al para que se pueda apreciar que las se&ntilde;ales son exactamente iguales.</p><pre class="codeinput">zf = zeros(M-1,1); <span class="comment">% condiciones iniciales</span>
+</pre><img vspace="5" hspace="5" src="Practica4_05.png" alt=""> <img vspace="5" hspace="5" src="Practica4_06.png" alt=""> <h2 id="10">LPC aplicado a codificaci&oacute;n</h2><p>Se realizar&aacute;n simulaciones de la aplicacion de LPC para codificaci&oacute;n. Hasta ahora se ha dividido la informaci&oacute;n de la se&ntilde;al en los coeficientes que dan informaci&oacute;n del espectro de la se&ntilde;al y la informaci&oacute;n del error de predicci&oacute;n. A partir del error y los coeficientes se construir&aacute; la se&ntilde;al original.</p><h2 id="11">Obtenci&oacute;n del error y sintetizado de la se&ntilde;al</h2><p>Mediante la funci&oacute;n <tt>filter</tt> se obtiene el error de cada segmento de la se&ntilde;al. Se aplicar&aacute; solo a porciones de audio de 10mseg, ya que al filtrar 25mseg pero luego tomar solo 10mseg de error, el error es mayor. Luego se utiliza la funci&oacute;n <tt>sintetizar</tt> que reconstruye el audio en base al error y los coeficientes. Se observa que el audio original y el sintetizado son exactamente iguales, a excepcion de los primeros subindices por las condiciones iniciales nulas utilizadas. Finalmente se grafica un zoom de la se&ntilde;al para que se pueda apreciar que las se&ntilde;ales son exactamente iguales.</p><pre class="codeinput">zf = zeros(M-1,1); <span class="comment">% condiciones iniciales</span>
 error = [];
 <span class="keyword">for</span> x = 1:length(inicios)
 
@@ -199,7 +199,7 @@ legend(<span class="string">'audio recibido'</span>,<span class="string">'audio 
 xlabel(<span class="string">'Tiempo [seg]'</span>)
 ylabel(<span class="string">'Amplitud'</span>)
 xlim([1.35 1.4])
-</pre><img vspace="5" hspace="5" src="Practica4_07.png" style="width:560px;height:420px;" alt=""> <img vspace="5" hspace="5" src="Practica4_08.png" style="width:560px;height:420px;" alt=""> <h2 id="12">Errores redondeados</h2><p>A continuaci&oacute;n se redondear&aacute; a punto fijo de 8, 6 y 4 bits y se sintetizar&aacute; nuevamente la se&ntilde;al. Para esto se utilizar&aacute;n las funciones implementadas <tt>redondear</tt> y <tt>sintetizar</tt>. Finalmente se graficar&aacute;n las se&ntilde;ales sintetizadas y se reproducira un audio para comparar dichas se&ntilde;ales. En el audio se reproducir&aacute; primero el audio original, luego el audio sintetizado sin redondear y finalmente los audios sintetizados de 8, 6 y 4 bits. Ver la funci&oacute;n <a href="sintetizar.html">sintetizar</a> y  <a href="redondear.html">redondear</a> para mas detalles sobre su implementacion.</p><pre class="codeinput"><span class="comment">% Redondeando a punto fijo de 8bit</span>
+</pre><img vspace="5" hspace="5" src="Practica4_07.png" alt=""> <img vspace="5" hspace="5" src="Practica4_08.png" alt=""> <h2 id="12">Errores redondeados</h2><p>A continuaci&oacute;n se redondear&aacute; a punto fijo de 8, 6 y 4 bits y se sintetizar&aacute; nuevamente la se&ntilde;al. Para esto se utilizar&aacute;n las funciones implementadas <tt>redondear</tt> y <tt>sintetizar</tt>. Finalmente se graficar&aacute;n las se&ntilde;ales sintetizadas y se reproducira un audio para comparar dichas se&ntilde;ales. En el audio se reproducir&aacute; primero el audio original, luego el audio sintetizado sin redondear y finalmente los audios sintetizados de 8, 6 y 4 bits. Ver la funci&oacute;n <a href="sintetizar.html">sintetizar</a> y  <a href="redondear.html">redondear</a> para mas detalles sobre su implementacion.</p><pre class="codeinput"><span class="comment">% Redondeando a punto fijo de 8bit</span>
 error_8bit = redondear(error, 8);
 S_recibida_8bit = sintetizar(error_8bit, coeficientes, Fs*paso, zf);
 
@@ -259,7 +259,7 @@ legend(<span class="string">'error original'</span>, <span class="string">'error
 xlabel(<span class="string">'Tiempo [seg]'</span>)
 ylabel(<span class="string">'Amplitud'</span>)
 xlim([1.35 1.36])
-</pre><img vspace="5" hspace="5" src="Practica4_09.png" style="width:560px;height:420px;" alt=""> <img vspace="5" hspace="5" src="Practica4_10.png" style="width:560px;height:420px;" alt=""> <h2 id="15">Se&ntilde;ales sintetizadas</h2><pre class="codeinput">figure
+</pre><img vspace="5" hspace="5" src="Practica4_09.png" alt=""> <img vspace="5" hspace="5" src="Practica4_10.png" alt=""> <h2 id="15">Se&ntilde;ales sintetizadas</h2><pre class="codeinput">figure
 plot(t_salida, S_recibida)
 hold <span class="string">on</span>
 plot(t_salida,S_recibida_8bit)
@@ -283,7 +283,17 @@ legend(<span class="string">'sintetizado double'</span>, <span class="string">'s
 xlabel(<span class="string">'Tiempo [seg]'</span>)
 ylabel(<span class="string">'Amplitud'</span>)
 xlim([1.35 1.36])
-</pre><img vspace="5" hspace="5" src="Practica4_11.png" style="width:560px;height:420px;" alt=""> <img vspace="5" hspace="5" src="Practica4_12.png" style="width:560px;height:420px;" alt=""> <p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2016b</a><br></p></div><!--
+</pre><img vspace="5" hspace="5" src="Practica4_11.png" alt=""> <img vspace="5" hspace="5" src="Practica4_12.png" alt=""> <h2 id="16">error pos sintetizado</h2><pre class="codeinput">error8 = audio(1:length(S_recibida))' - S_recibida_8bit;
+error6 = audio(1:length(S_recibida))' - S_recibida_6bit;
+error4 = audio(1:length(S_recibida))' - S_recibida_4bit;
+
+figure
+plot(t_salida, error8);
+hold <span class="string">on</span>
+plot(t_salida, error6);
+hold <span class="string">on</span>
+plot(t_salida, error4);
+</pre><img vspace="5" hspace="5" src="Practica4_13.png" alt=""> <p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2016b</a><br></p></div><!--
 ##### SOURCE BEGIN #####
 %% Práctica 4: Linear Predictive Coding(LPC)
 % Vázquez Matías - 
@@ -447,7 +457,7 @@ Noverlap = Fs*(ventana-paso)/2;
 
 figure
 spectrogram(audio, hanning(ancho) ,Noverlap, length(audio), Fs, 'yaxis')
-colormap winter
+colormap jet
 xlabel('Tiempo [seg]')
 ylabel('Frecuencia [kHz]')
 
@@ -455,7 +465,7 @@ t = (inicios-1)/Fs;
 
 figure
 surf(t,f(1:ancho/2)/1e3,log10(fft_S_estimado))
-colormap winter
+colormap jet
 shading interp
 set(gca,'xlim',[0 t(end)+paso], 'ylim', [0 Fs/2e3]);
 view(2)
@@ -616,6 +626,19 @@ legend('sintetizado double', 'sintetizado 8bit', 'sintetizado 6bit', 'sintetizad
 xlabel('Tiempo [seg]')
 ylabel('Amplitud')
 xlim([1.35 1.36])
+
+%% error pos sintetizado
+
+error8 = audio(1:length(S_recibida))' - S_recibida_8bit;
+error6 = audio(1:length(S_recibida))' - S_recibida_6bit;
+error4 = audio(1:length(S_recibida))' - S_recibida_4bit;
+
+figure
+plot(t_salida, error8);
+hold on
+plot(t_salida, error6);
+hold on
+plot(t_salida, error4);
 
 ##### SOURCE END #####
 --></body></html>

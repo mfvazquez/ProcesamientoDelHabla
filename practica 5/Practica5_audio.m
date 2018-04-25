@@ -1,7 +1,7 @@
 close all
 clear 
 
-[audio, Fs] = wavread('fantasia.wav');
+[audio, Fs] = audioread('fantasia.wav');
 
 puntos_fft = 200e3;
 

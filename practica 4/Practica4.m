@@ -160,7 +160,7 @@ Noverlap = Fs*(ventana-paso)/2;
 
 figure
 spectrogram(audio, hanning(ancho) ,Noverlap, length(audio), Fs, 'yaxis')
-colormap winter
+colormap jet
 xlabel('Tiempo [seg]')
 ylabel('Frecuencia [kHz]')
 
@@ -168,7 +168,7 @@ t = (inicios-1)/Fs;
 
 figure
 surf(t,f(1:ancho/2)/1e3,log10(fft_S_estimado))
-colormap winter
+colormap jet
 shading interp
 set(gca,'xlim',[0 t(end)+paso], 'ylim', [0 Fs/2e3]);
 view(2)

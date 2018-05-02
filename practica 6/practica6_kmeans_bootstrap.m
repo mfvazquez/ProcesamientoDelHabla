@@ -57,10 +57,23 @@ while continuar
         continuar = false;
     end
    
+    leyenda = {};
+    figure
+    for x = 1:length(clasificacion)
+
+        plot(clasificacion{x}(1,:),clasificacion{x}(2,:), [colores(x) 'o'])
+        hold on;
+        leyenda = [leyenda ['train set ' num2str(x)]];
+
+        plot(medias(1,x), medias(2,x), [colores(x) '+'],'linewidth',3);
+        leyenda = [leyenda ['media ' num2str(x)]];
+        
+    end
+    axis equal
 end
 
 figure
-plot(distorsiones)
+plot(distorsiones(2:end))
 
 % CALCULO EL RESTO DE LOS PARAMETROS
 for x = 1:size(medias,2)
@@ -98,6 +111,9 @@ for x = 1:length(bootstrap_set)
     hold on;
     leyenda = [leyenda ['test set ' num2str(x)]];
 
+    plot(parametros(x).media(1), parametros(x).media(2), '+k','linewidth',2);
+    leyenda = [leyenda ['media ' num2str(x)]];
+    
 end
 
 legend(leyenda, 'Location','southeast');

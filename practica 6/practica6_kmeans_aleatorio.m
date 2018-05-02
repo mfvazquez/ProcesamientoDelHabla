@@ -30,8 +30,9 @@ media_central = calcular_media(train_set);
 continuar = true;
 while continuar
 
-    for x = 1:length(archivos)
-        angulos_limites(x) = (rand*2-1)*pi;
+    angulos_limites(1) = (rand*2-1)*pi;
+    for x = 2:length(archivos)
+        angulos_limites(x) = angulos_limites(1) + (120/360)*2*pi * (x-1);
     end
     angulos_limites = sort(angulos_limites);
 
@@ -77,10 +78,24 @@ while continuar
         continuar = false;
     end
    
+    leyenda = {};
+    figure
+    for x = 1:length(clasificacion)
+
+        plot(clasificacion{x}(1,:),clasificacion{x}(2,:), [colores(x) 'o'])
+        hold on;
+        leyenda = [leyenda ['train set ' num2str(x)]];
+
+        plot(medias(1,x), medias(2,x), '+k','linewidth',2);
+        leyenda = [leyenda ['media ' num2str(x)]];
+        
+    end
+
+    
 end
 
 figure
-plot(distorsiones)
+plot(distorsiones(2:end))
 
 % CALCULO EL RESTO DE LOS PARAMETROS
 for x = 1:size(medias,2)
@@ -114,6 +129,9 @@ for x = 1:length(clasificacion_train)
     plot(clasificacion_test{x}(1,:),clasificacion_test{x}(2,:), [colores(x) '*'])
     hold on;
     leyenda = [leyenda ['test set ' num2str(x)]];
+
+    plot(parametros(x).media(1), parametros(x).media(2), '+k');
+    leyenda = [leyenda ['media ' num2str(x)]];
 
 end
 

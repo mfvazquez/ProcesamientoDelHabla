@@ -36,9 +36,9 @@ media_central = calcular_media(train_set);
 continuar = true;
 while continuar
 
-    angulos_limites(1) = (rand*2-1)*pi;
-    for x = 2:length(archivos)
-        angulos_limites(x) = angulos_limites(1) + (1/length(archivos))*2*pi * (x-1);
+
+    for x = 1:length(archivos)
+        angulos_limites(x) =(rand*2-1)*pi;
     end
     angulos_limites = sort(angulos_limites);
 
@@ -103,10 +103,15 @@ for x = 1:size(medias,2)
 end
 
 %% REORDENO LAS CLASES PARA QUE COINCIDAN CON LOS ARCHIVOS
-medias = [parametros.media];
-medias = medias(1,:);
-[~,idx] = sort(medias, 'descend');
-parametros = parametros(idx);
+
+for y = 1:length(parametros)
+    media = calcular_media(test_set(:,y*10-9:y*10));
+    for x = 1:length(parametros)
+        error(x) = norm(parametros(x).media - media);
+    end    
+    nuevo_orden(y) = find(min(error) == error);
+end
+parametros = parametros(nuevo_orden);
 
 %% FUNCION DISCRIMINANTE
 
@@ -123,21 +128,24 @@ clasificacion_train = clasificar_discriminante(g, train_set);
 
 leyenda = {};
 figure
-for x = 1:length(clasificacion_train)
+hold on;
+for x = 1:length(parametros)
     
-    plot(clasificacion_train{x}(1,:),clasificacion_train{x}(2,:), [colores(x) 'o'])
-    hold on;
-    leyenda = [leyenda ['train set ' num2str(x)]];
+    if ~isempty(clasificacion_train{x})
+        plot(clasificacion_train{x}(1,:),clasificacion_train{x}(2,:), [colores(x) 'o'])        
+        leyenda = [leyenda ['train set ' num2str(x)]];
+    end
     
-    plot(clasificacion_test{x}(1,:),clasificacion_test{x}(2,:), [colores(x) '*'])
-    hold on;
-    leyenda = [leyenda ['test set ' num2str(x)]];
+    if ~isempty(clasificacion_test{x})
+        plot(clasificacion_test{x}(1,:),clasificacion_test{x}(2,:), [colores(x) '*'])
+        leyenda = [leyenda ['test set ' num2str(x)]];
+    end
 
-    plot(parametros(x).media(1), parametros(x).media(2), '+k');
-    leyenda = [leyenda ['media ' num2str(x)]];
+%     plot(parametros(x).media(1), parametros(x).media(2), '+k');
+%     leyenda = [leyenda ['media ' num2str(x)]];
 
 end
 
-legend(leyenda, 'Location','southeast');
+% legend(leyenda, 'Location','southeast');
 
 disp(['Errores = ' num2str(errores)]);

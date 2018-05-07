@@ -12,12 +12,11 @@ function [clasificacion, errores] = clasificar_discriminante(g, formantes, valid
         for k = 1:length(g)
             resultados(k) = g{k}(actual);
         end
-        
         clase = find(max(resultados) == resultados);
-        clasificacion{clase}(:,end+1) = actual;
+        clasificacion{clase(1)}(:,end+1) = actual;
         
         
-        if nargin == 3 && clase ~= validaciones(n)
+        if nargin == 3 && clase(1) ~= validaciones(n)
             errores = errores + 1;
         end
         

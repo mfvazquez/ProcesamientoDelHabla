@@ -31,31 +31,27 @@ for x = 1:length(archivos)
 end
 
 %% OBTENGO LA MEDIA DE LOS ELEMENTOS DEL TRAIN SET
-subindice = 1;
-formante = train_set(subindice,:);
-minimo_formante = min(formante);
-rango = max(formante)-minimo_formante;
 
-formantes_limites(1) = minimo_formante + rand * rango/length(archivos);
+media_central = calcular_media(train_set);
 
 continuar = true;
 while continuar
 
-    for x = 2:length(archivos)-1
-        formantes_limites(x) = formantes_limites(1) + (rango/length(archivos)) *(x-1);
-    end    
-    formantes_limites = sort(formantes_limites, 'descend');
-    
+    for x = 1:length(archivos)
+        angulos_limites(x) =(rand*2-1)*pi;
+    end
+    angulos_limites = sort(angulos_limites);
+
     % PRIMER CLASIFICACION DEL TRAINSET
 
-    clasificacion = clasificar_lineal(formantes_limites(end:-1:1), train_set, subindice);
-    clasificacion = clasificacion(end:-1:1);
-    
+    clasificacion = clasificar_polar(angulos_limites, media_central, train_set);
+
     % si esta vacio un subespacio repito 
     continuar = false;
     for x = 1:length(clasificacion)
-        if isempty(clasificacion{x})
+        if length(clasificacion{x}) < 3
             continuar = true;
+            break
         end
     end
     
@@ -66,6 +62,42 @@ for x = 1:length(clasificacion)
 end
 
 graficar_clasificacion(colores, clasificacion, medias);
+
+% subindice = 1;
+% formante = train_set(subindice,:);
+% minimo_formante = min(formante);
+% rango = max(formante)-minimo_formante;
+% 
+% formantes_limites(1) = minimo_formante + rango/(4*length(archivos)) + rand * rango/(length(archivos)*2);
+% 
+% continuar = true;
+% while continuar
+% 
+%     for x = 2:length(archivos)-1
+%         formantes_limites(x) = formantes_limites(1) + (rango/length(archivos)) *(x-1);
+%     end    
+%     formantes_limites = sort(formantes_limites, 'descend');
+%     
+%     % PRIMER CLASIFICACION DEL TRAINSET
+% 
+%     clasificacion = clasificar_lineal(formantes_limites(end:-1:1), train_set, subindice);
+%     clasificacion = clasificacion(end:-1:1);
+%     
+%     % si esta vacio un subespacio repito 
+%     continuar = false;
+%     for x = 1:length(clasificacion)
+%         if isempty(clasificacion{x})
+%             continuar = true;
+%         end
+%     end
+%     
+% end
+
+% for x = 1:length(clasificacion)
+%     medias(:,x) = calcular_media(clasificacion{x});
+% end
+% 
+% graficar_clasificacion(colores, clasificacion, medias);
 
 % CALCULO PARAMETROS EN BASE A LA CLASIFICACION ALEATORIA
 for x = 1:length(clasificacion)
@@ -136,6 +168,17 @@ end
 figure
 plot(likelihood)
 
+%% REORDENO
+
+for y = 1:length(parametros)
+    media = calcular_media(test_set(:,y*10-9:y*10));
+    for x = 1:length(parametros)
+        error(x) = norm(parametros(x).media - media);
+    end    
+    nuevo_orden(y) = find(min(error) == error);
+end
+parametros = parametros(nuevo_orden);
+
 %% CLASIFICO
 
 for x = 1:length(parametros)
@@ -147,7 +190,7 @@ for i = 1:size(train_set, 2)
     Gamma = calcular_gamma(parametros, train_set(:,i));
     
     clase = find(max(Gamma) == Gamma);
-    clasificacion_train{clase}(:,end+1) = train_set(:,i);
+    clasificacion_train{clase(1)}(:,end+1) = train_set(:,i);
 end
 
 errores = 0;
@@ -156,8 +199,8 @@ for i = 1:size(test_set,2)
     Gamma = calcular_gamma(parametros, test_set(:,i));
     
     clase = find(max(Gamma) == Gamma);
-    clasificacion_test{clase}(:,end+1) = test_set(:,i);
-    if clase ~= resultados_test(i)
+    clasificacion_test{clase(1)}(:,end+1) = test_set(:,i);
+    if clase(1) ~= resultados_test(i)
         errores = errores + 1;
     end
 end
@@ -165,17 +208,16 @@ end
 
 leyenda = {};
 figure
+hold on;
 for x = 1:length(clasificacion_train)
    
     if ~isempty(clasificacion_train{x})
-        plot(clasificacion_train{x}(1,:),clasificacion_train{x}(2,:), [colores(x) 'o'])
-        hold on;
+        plot(clasificacion_train{x}(1,:),clasificacion_train{x}(2,:), [colores(x) 'o'])        
         leyenda = [leyenda ['train set ' num2str(x)]];
     end
     
     if ~isempty(clasificacion_test{x})
         plot(clasificacion_test{x}(1,:),clasificacion_test{x}(2,:), [colores(x) '*'])
-        hold on;
         leyenda = [leyenda ['test set ' num2str(x)]];
     end
 

@@ -107,7 +107,7 @@ for x = 1:length(bootstrap_set)
     
 end
 
-legend(leyenda, 'Location','southeast');
+% legend(leyenda, 'Location','southeast');
 
 disp(['Errores = ' num2str(errores)]);
 

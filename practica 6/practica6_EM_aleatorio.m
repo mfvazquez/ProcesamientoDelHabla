@@ -5,14 +5,14 @@ clc
 colores = 'rgbymc';
 formantes_utilizados = 1:2;
 
-%% %%%%%%%%%%%%%%%%%%%%%%%%%%%% EM BOOTSTRAP %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%% EM ALEATORIO %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-bootstrap = 5;
-train = 35; % cantidad de formantes utilizados para el entrenamiento
+train = 40; % cantidad de formantes utilizados para el entrenamiento
 
 train_set = [];
 test_set = [];
 resultados_test = [];
+
 archivos = dir(fullfile('data','*.txt'));
 for x = 1:length(archivos)
     
@@ -24,20 +24,57 @@ for x = 1:length(archivos)
     
     original{x} = formantes_actuales;
     
-    bootstrap_set{x} = formantes_actuales(:,1:bootstrap);
-    train_set = [train_set formantes_actuales(:,bootstrap+1:bootstrap+train)];
-    test_set = [test_set formantes_actuales(:,bootstrap+train+1:end)];
-    resultados_test = [resultados_test ones(1,length(original{x})-train-bootstrap).*x];
+    train_set = [train_set formantes_actuales(:,1:train)];
+    test_set = [test_set formantes_actuales(:,train+1:end)];
+    resultados_test = [resultados_test ones(1,length(original{x})-train).*x];
+
 end
 
-%% OBTENGO LA MEDIA DE LOS ELEMENTOS DEL BOOTSTRAP
+%% OBTENGO LA MEDIA DE LOS ELEMENTOS DEL TRAIN SET
+subindice = 1;
+formante = train_set(subindice,:);
+minimo_formante = min(formante);
+rango = max(formante)-minimo_formante;
 
-for x = 1:length(bootstrap_set)
-    parametro.media = calcular_media(bootstrap_set{x});
-    parametro.varianza = calcular_varianza(bootstrap_set{x},parametro.media);
-    parametro.pi = length(bootstrap_set{x})/(bootstrap*length(bootstrap_set));
+formantes_limites(1) = minimo_formante + rand * rango/length(archivos);
+
+continuar = true;
+while continuar
+
+    for x = 2:length(archivos)-1
+        formantes_limites(x) = formantes_limites(1) + (rango/length(archivos)) *(x-1);
+    end    
+    formantes_limites = sort(formantes_limites, 'descend');
+    
+    % PRIMER CLASIFICACION DEL TRAINSET
+
+    clasificacion = clasificar_lineal(formantes_limites(end:-1:1), train_set, subindice);
+    clasificacion = clasificacion(end:-1:1);
+    
+    % si esta vacio un subespacio repito 
+    continuar = false;
+    for x = 1:length(clasificacion)
+        if isempty(clasificacion{x})
+            continuar = true;
+        end
+    end
+    
+end
+
+for x = 1:length(clasificacion)
+    medias(:,x) = calcular_media(clasificacion{x});
+end
+
+graficar_clasificacion(colores, clasificacion, medias);
+
+% CALCULO PARAMETROS EN BASE A LA CLASIFICACION ALEATORIA
+for x = 1:length(clasificacion)
+    parametro.media = calcular_media(clasificacion{x});
+    parametro.varianza = calcular_varianza(clasificacion{x},parametro.media);
+    parametro.pi = length(clasificacion{x})/length([clasificacion{:}]);
     parametros(x) = parametro;
 end
+
 
 %% INICIO EL ENTRENAMIENTO
 
@@ -101,7 +138,7 @@ plot(likelihood)
 
 %% CLASIFICO
 
-for x = 1:length(bootstrap_set)
+for x = 1:length(parametros)
     clasificacion_train{x} = [];
     clasificacion_test{x} = [];
 end
@@ -128,15 +165,19 @@ end
 
 leyenda = {};
 figure
-for x = 1:length(bootstrap_set)
+for x = 1:length(clasificacion_train)
    
-    plot(clasificacion_train{x}(1,:),clasificacion_train{x}(2,:), [colores(x) 'o'])
-    hold on;
-    leyenda = [leyenda ['train set ' num2str(x)]];
+    if ~isempty(clasificacion_train{x})
+        plot(clasificacion_train{x}(1,:),clasificacion_train{x}(2,:), [colores(x) 'o'])
+        hold on;
+        leyenda = [leyenda ['train set ' num2str(x)]];
+    end
     
-    plot(clasificacion_test{x}(1,:),clasificacion_test{x}(2,:), [colores(x) '*'])
-    hold on;
-    leyenda = [leyenda ['test set ' num2str(x)]];
+    if ~isempty(clasificacion_test{x})
+        plot(clasificacion_test{x}(1,:),clasificacion_test{x}(2,:), [colores(x) '*'])
+        hold on;
+        leyenda = [leyenda ['test set ' num2str(x)]];
+    end
 
     plot(parametros(x).media(1), parametros(x).media(2), '+k','linewidth',2);
     leyenda = [leyenda ['media ' num2str(x)]];

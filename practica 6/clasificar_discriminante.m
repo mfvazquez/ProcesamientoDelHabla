@@ -1,4 +1,6 @@
-function clasificacion = clasificar_discriminante(g, formantes)
+function [clasificacion, errores] = clasificar_discriminante(g, formantes, validaciones)
+
+    errores = 0;
 
     for x = 1:length(g)
         clasificacion{x} = [];
@@ -13,6 +15,11 @@ function clasificacion = clasificar_discriminante(g, formantes)
         
         clase = find(max(resultados) == resultados);
         clasificacion{clase}(:,end+1) = actual;
+        
+        
+        if nargin == 3 && clase ~= validaciones(n)
+            errores = errores + 1;
+        end
         
     end
     

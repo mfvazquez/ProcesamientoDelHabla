@@ -10,6 +10,8 @@ train = 40; % cantidad de formantes utilizados para el entrenamiento
 
 train_set = [];
 test_set = [];
+resultados_test = [];
+
 archivos = dir(fullfile('data','*.txt'));
 for x = 1:length(archivos)
     
@@ -19,11 +21,15 @@ for x = 1:length(archivos)
     formantes_actuales = formantes_actuales(formantes_utilizados,:);
     formantes_actuales = formantes_actuales(:,randperm(length(formantes_actuales)));
     
+    original{x} = formantes_actuales;
+    
     train_set = [train_set formantes_actuales(:,1:train)];
     test_set = [test_set formantes_actuales(:,train+1:end)];
+    resultados_test = [resultados_test ones(1,length(original{x})-train).*x];
+
 end
 
-%% OBTENGO LA MEDIA DE LOS ELEMENTOS DEL TRAIN SET
+%% OBTENGO LOS PARAMETROS EN BASE A UNA CLASIFICACION PREVIA ALEATORIA
 
 media_central = calcular_media(train_set);
 
@@ -32,7 +38,7 @@ while continuar
 
     angulos_limites(1) = (rand*2-1)*pi;
     for x = 2:length(archivos)
-        angulos_limites(x) = angulos_limites(1) + (120/360)*2*pi * (x-1);
+        angulos_limites(x) = angulos_limites(1) + (1/length(archivos))*2*pi * (x-1);
     end
     angulos_limites = sort(angulos_limites);
 
@@ -53,6 +59,9 @@ end
 for x = 1:length(clasificacion)
     medias(:,x) = calcular_media(clasificacion{x});
 end
+
+graficar_clasificacion(colores, clasificacion, medias);
+
 
 %% INICIO DEL APRENDIZAJE
 
@@ -78,19 +87,7 @@ while continuar
         continuar = false;
     end
    
-    leyenda = {};
-    figure
-    for x = 1:length(clasificacion)
-
-        plot(clasificacion{x}(1,:),clasificacion{x}(2,:), [colores(x) 'o'])
-        hold on;
-        leyenda = [leyenda ['train set ' num2str(x)]];
-
-        plot(medias(1,x), medias(2,x), '+k','linewidth',2);
-        leyenda = [leyenda ['media ' num2str(x)]];
-        
-    end
-
+    graficar_clasificacion(colores, clasificacion, medias)
     
 end
 
@@ -105,6 +102,12 @@ for x = 1:size(medias,2)
     parametros(x) = parametro;
 end
 
+%% REORDENO LAS CLASES PARA QUE COINCIDAN CON LOS ARCHIVOS
+medias = [parametros.media];
+medias = medias(1,:);
+[~,idx] = sort(medias, 'descend');
+parametros = parametros(idx);
+
 %% FUNCION DISCRIMINANTE
 
 for k = 1:length(parametros)
@@ -116,7 +119,7 @@ end
 %% INICIO DEL TEST
 
 clasificacion_train = clasificar_discriminante(g, train_set);
-clasificacion_test = clasificar_discriminante(g, test_set);
+[clasificacion_test, errores] = clasificar_discriminante(g, test_set, resultados_test);
 
 leyenda = {};
 figure
@@ -136,3 +139,5 @@ for x = 1:length(clasificacion_train)
 end
 
 legend(leyenda, 'Location','southeast');
+
+disp(['Errores = ' num2str(errores)]);

@@ -4,6 +4,7 @@ function clasificacion = clasificacion_euclidea(medias, formantes)
         clasificacion{x} = [];
     end
 
+    
     for x = 1:size(formantes,2)        
         actual = formantes(:,x);
         
@@ -13,7 +14,7 @@ function clasificacion = clasificacion_euclidea(medias, formantes)
         
         clase = find(min(distancias) == distancias);
         clasificacion{clase}(:,end+1) = actual;
-
+        
     end
-
+    
 end

@@ -77,7 +77,7 @@ while true
 
     end
 
-    %% CALCULO LIKELIHOOD
+    %% LIKELIHOOD
 
     LL = 0;
     for i = 1:size(train_set,2)
@@ -128,24 +128,31 @@ end
 
 leyenda = {};
 figure
+hold on;
+
 for x = 1:length(bootstrap_set)
    
+    plot(original{x}(1,:),original{x}(2,:), [colores(x) '.'], 'linewidth',3)
+    leyenda = [leyenda ['original ' num2str(x)]];
+    
     plot(clasificacion_train{x}(1,:),clasificacion_train{x}(2,:), [colores(x) 'o'])
-    hold on;
     leyenda = [leyenda ['train set ' num2str(x)]];
     
-    plot(clasificacion_test{x}(1,:),clasificacion_test{x}(2,:), [colores(x) '*'])
-    hold on;
+    plot(clasificacion_test{x}(1,:),clasificacion_test{x}(2,:), [colores(x) '^'])
     leyenda = [leyenda ['test set ' num2str(x)]];
-
-    plot(parametros(x).media(1), parametros(x).media(2), '+k','linewidth',2);
-    leyenda = [leyenda ['media ' num2str(x)]];
+% 
+%     plot(parametros(x).media(1), parametros(x).media(2), '+k','linewidth',2);
+%     leyenda = [leyenda ['media ' num2str(x)]];
     
 end
 
-legend(leyenda, 'Location','southeast');
+legend(leyenda, 'Location','best');
+
+%% ERRORES DETECTADOS
 
 disp(['Errores = ' num2str(errores)]);
+
+%% GRAFICO USANDO LOS GAMMA COMO CODIGO DE COLORES
 
 
 figure
@@ -157,6 +164,6 @@ end
 
 for i = 1:size(test_set,2)
     Gamma = calcular_gamma(parametros, test_set(:,i));
-    plot(test_set(1,i), test_set(2,i),'*','color',Gamma)
+    plot(test_set(1,i), test_set(2,i),'^','color',Gamma)
     hold on
 end

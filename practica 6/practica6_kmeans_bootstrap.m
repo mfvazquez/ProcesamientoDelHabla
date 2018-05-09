@@ -5,7 +5,7 @@ clc
 colores = 'rgbymc';
 formantes_utilizados = 1:2;
 
-%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%% BOOTSTRAP %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% BOOTSTRAP 
 bootstrap = 5;
 train = 35; % cantidad de formantes utilizados para el entrenamiento
 
@@ -30,6 +30,7 @@ for x = 1:length(archivos)
 
 end
 
+
 %% OBTENGO LA MEDIA DE LOS ELEMENTOS DEL BOOTSTRAP
 
 for x = 1:length(bootstrap_set)
@@ -39,7 +40,7 @@ end
 
 %% INICIO DEL APRENDIZAJE
 
-% AGRUPO LOS TRAINSET A LAS MEDIAS MAS CERCANAS
+% AGRUPO LOS TRAINSET A LAS MEDIAS MÁS CERCANAS
 
 TOLERANCIA = 1e-3;
 
@@ -58,8 +59,11 @@ while true
         medias(:,x) = calcular_media(clasificacion{x});
     end
     
+    figure
     graficar_clasificacion(colores, clasificacion, medias)
 end
+
+%% GRAFICO DE LA DISTORSION EN CADA ITERACIÓN
 
 figure
 plot(distorsiones)
@@ -73,7 +77,7 @@ for x = 1:size(medias,2)
     parametros(x) = parametro;
 end
 
-%% FUNCION DISCRIMINANTE
+%% DEFINO LA FUNCIÓN DISCRIMINANTE PARA CADA CLASE
 
 for k = 1:length(parametros)
     g{k} = @(x) (-1/2) * log( abs( det( parametros(k).varianza ) ) ) + ...
@@ -88,26 +92,33 @@ clasificacion_train = clasificar_discriminante(g, train_set);
 
 leyenda = {};
 figure
-for x = 1:length(bootstrap_set)
+hold on;
 
-%     plot(bootstrap_set{x}(1,:),bootstrap_set{x}(2,:), [colores(x) 's']);
-%     hold on;
-%     leyenda = [leyenda ['bootstrap set ' num2str(x)]];
+%% GRAFICO LA DISTRIBUCIÓN ORIGINAL DE LOS ARCHIVOS
+
+
+for x = 1:length(bootstrap_set)
+    plot(original{x}(1,:),original{x}(2,:), [colores(x) '.'], 'linewidth',3)
+    leyenda = [leyenda ['original ' num2str(x)]];
+
     
+%     plot(bootstrap_set{x}(1,:),bootstrap_set{x}(2,:), [colores(x) 's']);
+%     leyenda = [leyenda ['bootstrap set ' num2str(x)]];
+%     
     plot(clasificacion_train{x}(1,:),clasificacion_train{x}(2,:), [colores(x) 'o'])
-    hold on;
     leyenda = [leyenda ['train set ' num2str(x)]];
     
-    plot(clasificacion_test{x}(1,:),clasificacion_test{x}(2,:), [colores(x) '*'])
-    hold on;
+    plot(clasificacion_test{x}(1,:),clasificacion_test{x}(2,:), [colores(x) '^'])
     leyenda = [leyenda ['test set ' num2str(x)]];
 
-    plot(parametros(x).media(1), parametros(x).media(2), '+k','linewidth',2);
-    leyenda = [leyenda ['media ' num2str(x)]];
+%     plot(parametros(x).media(1), parametros(x).media(2), '+k','linewidth',2);
+%     leyenda = [leyenda ['media ' num2str(x)]];
     
 end
 
-% legend(leyenda, 'Location','southeast');
+legend(leyenda, 'Location','best');
+
+%% CANTIDAD DE ERRORES DETECTADOS EN LOS TEST
 
 disp(['Errores = ' num2str(errores)]);
 

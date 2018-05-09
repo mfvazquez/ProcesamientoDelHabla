@@ -5,7 +5,7 @@ clc
 colores = 'rgbymc';
 formantes_utilizados = 1:2;
 
-%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%% ALEATORIO %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% ALEATORIO 
 train = 40; % cantidad de formantes utilizados para el entrenamiento
 
 train_set = [];
@@ -91,6 +91,8 @@ while continuar
     
 end
 
+%% DISTORSIÓN
+
 figure
 plot(distorsiones(2:end))
 
@@ -131,13 +133,16 @@ figure
 hold on;
 for x = 1:length(parametros)
     
+    plot(original{x}(1,:),original{x}(2,:), [colores(x) '.'], 'linewidth',3)
+    leyenda = [leyenda ['original ' num2str(x)]];
+    
     if ~isempty(clasificacion_train{x})
         plot(clasificacion_train{x}(1,:),clasificacion_train{x}(2,:), [colores(x) 'o'])        
         leyenda = [leyenda ['train set ' num2str(x)]];
     end
     
     if ~isempty(clasificacion_test{x})
-        plot(clasificacion_test{x}(1,:),clasificacion_test{x}(2,:), [colores(x) '*'])
+        plot(clasificacion_test{x}(1,:),clasificacion_test{x}(2,:), [colores(x) '^'])
         leyenda = [leyenda ['test set ' num2str(x)]];
     end
 
@@ -146,6 +151,6 @@ for x = 1:length(parametros)
 
 end
 
-% legend(leyenda, 'Location','southeast');
+legend(leyenda, 'Location','best');
 
 disp(['Errores = ' num2str(errores)]);

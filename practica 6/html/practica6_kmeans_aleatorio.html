@@ -1,0 +1,364 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>practica6_kmeans_aleatorio</title><meta name="generator" content="MATLAB 9.1"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2018-05-09"><meta name="DC.source" content="practica6_kmeans_aleatorio.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#2">%%%  ALEATORIO</a></li><li><a href="#3">OBTENGO LOS PARAMETROS EN BASE A UNA CLASIFICACION PREVIA ALEATORIA</a></li><li><a href="#4">INICIO DEL APRENDIZAJE</a></li><li><a href="#5">DISTORSI&Oacute;N</a></li><li><a href="#6">REORDENO LAS CLASES PARA QUE COINCIDAN CON LOS ARCHIVOS</a></li><li><a href="#7">FUNCION DISCRIMINANTE</a></li><li><a href="#8">INICIO DEL TEST</a></li></ul></div><pre class="codeinput">close <span class="string">all</span>
+clear
+clc
+
+colores = <span class="string">'rgbymc'</span>;
+formantes_utilizados = 1:2;
+</pre><h2 id="2">%%%  ALEATORIO</h2><pre class="codeinput">train = 40; <span class="comment">% cantidad de formantes utilizados para el entrenamiento</span>
+
+train_set = [];
+test_set = [];
+resultados_test = [];
+
+archivos = dir(fullfile(<span class="string">'data'</span>,<span class="string">'*.txt'</span>));
+<span class="keyword">for</span> x = 1:length(archivos)
+
+    archivo_actual = fullfile(<span class="string">'data'</span>, archivos(x).name);
+
+    formantes_actuales = importdata(archivo_actual)';
+    formantes_actuales = formantes_actuales(formantes_utilizados,:);
+    formantes_actuales = formantes_actuales(:,randperm(length(formantes_actuales)));
+
+    original{x} = formantes_actuales;
+
+    train_set = [train_set formantes_actuales(:,1:train)];
+    test_set = [test_set formantes_actuales(:,train+1:end)];
+    resultados_test = [resultados_test ones(1,length(original{x})-train).*x];
+
+<span class="keyword">end</span>
+</pre><h2 id="3">OBTENGO LOS PARAMETROS EN BASE A UNA CLASIFICACION PREVIA ALEATORIA</h2><pre class="codeinput">media_central = calcular_media(train_set);
+
+continuar = true;
+<span class="keyword">while</span> continuar
+
+
+    <span class="keyword">for</span> x = 1:length(archivos)
+        angulos_limites(x) =(rand*2-1)*pi;
+    <span class="keyword">end</span>
+    angulos_limites = sort(angulos_limites);
+
+    <span class="comment">% PRIMER CLASIFICACION DEL TRAINSET</span>
+
+    clasificacion = clasificar_polar(angulos_limites, media_central, train_set);
+
+    <span class="comment">% si esta vacio un subespacio repito</span>
+    continuar = false;
+    <span class="keyword">for</span> x = 1:length(clasificacion)
+        <span class="keyword">if</span> isempty(clasificacion{x})
+            continuar = true;
+        <span class="keyword">end</span>
+    <span class="keyword">end</span>
+
+<span class="keyword">end</span>
+
+<span class="keyword">for</span> x = 1:length(clasificacion)
+    medias(:,x) = calcular_media(clasificacion{x});
+<span class="keyword">end</span>
+
+graficar_clasificacion(colores, clasificacion, medias);
+</pre><img vspace="5" hspace="5" src="practica6_kmeans_aleatorio_01.png" style="width:560px;height:420px;" alt=""> <h2 id="4">INICIO DEL APRENDIZAJE</h2><pre class="codeinput"><span class="comment">% AGRUPO LOS TRAINSET A LAS MEDIAS MAS CERCANAS</span>
+
+tolerancia = 1e-3;
+
+distorsiones(1) = calcular_distorsion(medias, clasificacion);
+
+n = 1;
+continuar = true;
+<span class="keyword">while</span> continuar
+    n = n + 1;
+    clasificacion = clasificacion_euclidea(medias, train_set);
+
+    <span class="keyword">for</span> x = 1:size(medias,2)
+        medias(:,x) = calcular_media(clasificacion{x});
+    <span class="keyword">end</span>
+
+    distorsiones(n) = calcular_distorsion(medias, clasificacion);
+
+    <span class="keyword">if</span> abs(distorsiones(end) - distorsiones(end-1)) &lt; tolerancia
+        continuar = false;
+    <span class="keyword">end</span>
+
+    graficar_clasificacion(colores, clasificacion, medias)
+
+<span class="keyword">end</span>
+</pre><img vspace="5" hspace="5" src="practica6_kmeans_aleatorio_02.png" style="width:560px;height:420px;" alt=""> <h2 id="5">DISTORSI&Oacute;N</h2><pre class="codeinput">figure
+plot(distorsiones(2:end))
+
+<span class="comment">% CALCULO EL RESTO DE LOS PARAMETROS</span>
+<span class="keyword">for</span> x = 1:size(medias,2)
+    parametro.media = medias(:,x);
+    parametro.varianza = calcular_varianza(clasificacion{x},parametro.media);
+    parametro.pi = length(clasificacion{x})/(train*length(clasificacion));
+    parametros(x) = parametro;
+<span class="keyword">end</span>
+</pre><img vspace="5" hspace="5" src="practica6_kmeans_aleatorio_03.png" style="width:560px;height:420px;" alt=""> <h2 id="6">REORDENO LAS CLASES PARA QUE COINCIDAN CON LOS ARCHIVOS</h2><pre class="codeinput"><span class="keyword">for</span> y = 1:length(parametros)
+    media = calcular_media(test_set(:,y*10-9:y*10));
+    <span class="keyword">for</span> x = 1:length(parametros)
+        error(x) = norm(parametros(x).media - media);
+    <span class="keyword">end</span>
+    nuevo_orden(y) = find(min(error) == error);
+<span class="keyword">end</span>
+parametros = parametros(nuevo_orden);
+</pre><h2 id="7">FUNCION DISCRIMINANTE</h2><pre class="codeinput"><span class="keyword">for</span> k = 1:length(parametros)
+    g{k} = @(x) (-1/2) * log( abs( det( parametros(k).varianza ) ) ) + <span class="keyword">...</span>
+        (-1/2) * (x-parametros(k).media)' * parametros(k).varianza^-1 * (x-parametros(k).media) + <span class="keyword">...</span>
+        log(parametros(k).pi);
+<span class="keyword">end</span>
+</pre><h2 id="8">INICIO DEL TEST</h2><pre class="codeinput">clasificacion_train = clasificar_discriminante(g, train_set);
+[clasificacion_test, errores] = clasificar_discriminante(g, test_set, resultados_test);
+
+leyenda = {};
+figure
+hold <span class="string">on</span>;
+<span class="keyword">for</span> x = 1:length(parametros)
+
+    plot(original{x}(1,:),original{x}(2,:), [colores(x) <span class="string">'.'</span>], <span class="string">'linewidth'</span>,3)
+    leyenda = [leyenda [<span class="string">'original '</span> num2str(x)]];
+
+    <span class="keyword">if</span> ~isempty(clasificacion_train{x})
+        plot(clasificacion_train{x}(1,:),clasificacion_train{x}(2,:), [colores(x) <span class="string">'o'</span>])
+        leyenda = [leyenda [<span class="string">'train set '</span> num2str(x)]];
+    <span class="keyword">end</span>
+
+    <span class="keyword">if</span> ~isempty(clasificacion_test{x})
+        plot(clasificacion_test{x}(1,:),clasificacion_test{x}(2,:), [colores(x) <span class="string">'^'</span>])
+        leyenda = [leyenda [<span class="string">'test set '</span> num2str(x)]];
+    <span class="keyword">end</span>
+
+<span class="comment">%     plot(parametros(x).media(1), parametros(x).media(2), '+k');</span>
+<span class="comment">%     leyenda = [leyenda ['media ' num2str(x)]];</span>
+
+<span class="keyword">end</span>
+
+legend(leyenda, <span class="string">'Location'</span>,<span class="string">'best'</span>);
+
+disp([<span class="string">'Errores = '</span> num2str(errores)]);
+</pre><pre class="codeoutput">Errores = 3
+</pre><img vspace="5" hspace="5" src="practica6_kmeans_aleatorio_04.png" style="width:560px;height:420px;" alt=""> <p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2016b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+close all
+clear
+clc
+
+colores = 'rgbymc';
+formantes_utilizados = 1:2;
+
+%% %%%  ALEATORIO 
+train = 40; % cantidad de formantes utilizados para el entrenamiento
+
+train_set = [];
+test_set = [];
+resultados_test = [];
+
+archivos = dir(fullfile('data','*.txt'));
+for x = 1:length(archivos)
+    
+    archivo_actual = fullfile('data', archivos(x).name);    
+    
+    formantes_actuales = importdata(archivo_actual)';
+    formantes_actuales = formantes_actuales(formantes_utilizados,:);
+    formantes_actuales = formantes_actuales(:,randperm(length(formantes_actuales)));
+    
+    original{x} = formantes_actuales;
+    
+    train_set = [train_set formantes_actuales(:,1:train)];
+    test_set = [test_set formantes_actuales(:,train+1:end)];
+    resultados_test = [resultados_test ones(1,length(original{x})-train).*x];
+
+end
+
+%% OBTENGO LOS PARAMETROS EN BASE A UNA CLASIFICACION PREVIA ALEATORIA
+
+media_central = calcular_media(train_set);
+
+continuar = true;
+while continuar
+
+
+    for x = 1:length(archivos)
+        angulos_limites(x) =(rand*2-1)*pi;
+    end
+    angulos_limites = sort(angulos_limites);
+
+    % PRIMER CLASIFICACION DEL TRAINSET
+
+    clasificacion = clasificar_polar(angulos_limites, media_central, train_set);
+
+    % si esta vacio un subespacio repito 
+    continuar = false;
+    for x = 1:length(clasificacion)
+        if isempty(clasificacion{x})
+            continuar = true;
+        end
+    end
+    
+end
+
+for x = 1:length(clasificacion)
+    medias(:,x) = calcular_media(clasificacion{x});
+end
+
+graficar_clasificacion(colores, clasificacion, medias);
+
+
+%% INICIO DEL APRENDIZAJE
+
+% AGRUPO LOS TRAINSET A LAS MEDIAS MAS CERCANAS
+
+tolerancia = 1e-3;
+
+distorsiones(1) = calcular_distorsion(medias, clasificacion);
+
+n = 1;
+continuar = true;
+while continuar
+    n = n + 1;
+    clasificacion = clasificacion_euclidea(medias, train_set);
+
+    for x = 1:size(medias,2)
+        medias(:,x) = calcular_media(clasificacion{x});
+    end
+    
+    distorsiones(n) = calcular_distorsion(medias, clasificacion);
+   
+    if abs(distorsiones(end) - distorsiones(end-1)) < tolerancia
+        continuar = false;
+    end
+   
+    graficar_clasificacion(colores, clasificacion, medias)
+    
+end
+
+%% DISTORSIÓN
+
+figure
+plot(distorsiones(2:end))
+
+% CALCULO EL RESTO DE LOS PARAMETROS
+for x = 1:size(medias,2)
+    parametro.media = medias(:,x);
+    parametro.varianza = calcular_varianza(clasificacion{x},parametro.media);
+    parametro.pi = length(clasificacion{x})/(train*length(clasificacion));
+    parametros(x) = parametro;
+end
+
+%% REORDENO LAS CLASES PARA QUE COINCIDAN CON LOS ARCHIVOS
+
+for y = 1:length(parametros)
+    media = calcular_media(test_set(:,y*10-9:y*10));
+    for x = 1:length(parametros)
+        error(x) = norm(parametros(x).media - media);
+    end    
+    nuevo_orden(y) = find(min(error) == error);
+end
+parametros = parametros(nuevo_orden);
+
+%% FUNCION DISCRIMINANTE
+
+for k = 1:length(parametros)
+    g{k} = @(x) (-1/2) * log( abs( det( parametros(k).varianza ) ) ) + ...
+        (-1/2) * (x-parametros(k).media)' * parametros(k).varianza^-1 * (x-parametros(k).media) + ...
+        log(parametros(k).pi);
+end
+
+%% INICIO DEL TEST
+
+clasificacion_train = clasificar_discriminante(g, train_set);
+[clasificacion_test, errores] = clasificar_discriminante(g, test_set, resultados_test);
+
+leyenda = {};
+figure
+hold on;
+for x = 1:length(parametros)
+    
+    plot(original{x}(1,:),original{x}(2,:), [colores(x) '.'], 'linewidth',3)
+    leyenda = [leyenda ['original ' num2str(x)]];
+    
+    if ~isempty(clasificacion_train{x})
+        plot(clasificacion_train{x}(1,:),clasificacion_train{x}(2,:), [colores(x) 'o'])        
+        leyenda = [leyenda ['train set ' num2str(x)]];
+    end
+    
+    if ~isempty(clasificacion_test{x})
+        plot(clasificacion_test{x}(1,:),clasificacion_test{x}(2,:), [colores(x) '^'])
+        leyenda = [leyenda ['test set ' num2str(x)]];
+    end
+
+%     plot(parametros(x).media(1), parametros(x).media(2), '+k');
+%     leyenda = [leyenda ['media ' num2str(x)]];
+
+end
+
+legend(leyenda, 'Location','best');
+
+disp(['Errores = ' num2str(errores)]);
+##### SOURCE END #####
+--></body></html>

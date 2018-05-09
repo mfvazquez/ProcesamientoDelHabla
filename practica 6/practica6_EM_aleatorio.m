@@ -5,7 +5,7 @@ clc
 colores = 'rgbymc';
 formantes_utilizados = 1:2;
 
-%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%% EM ALEATORIO %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% ALEATORIO
 
 train = 40; % cantidad de formantes utilizados para el entrenamiento
 
@@ -61,6 +61,9 @@ for x = 1:length(clasificacion)
     medias(:,x) = calcular_media(clasificacion{x});
 end
 
+%% GRAFICO DE LA DISTRIBUCIÓN INICIAL
+
+figure
 graficar_clasificacion(colores, clasificacion, medias);
 
 % subindice = 1;
@@ -146,7 +149,7 @@ while true
 
     end
 
-    %% CALCULO LIKELIHOOD
+    %% LIKELIHOOD
 
     LL = 0;
     for i = 1:size(train_set,2)
@@ -209,27 +212,34 @@ end
 leyenda = {};
 figure
 hold on;
+
 for x = 1:length(clasificacion_train)
    
+    plot(original{x}(1,:),original{x}(2,:), [colores(x) '.'], 'linewidth',3)
+    leyenda = [leyenda ['original ' num2str(x)]];
+    
     if ~isempty(clasificacion_train{x})
         plot(clasificacion_train{x}(1,:),clasificacion_train{x}(2,:), [colores(x) 'o'])        
         leyenda = [leyenda ['train set ' num2str(x)]];
     end
     
     if ~isempty(clasificacion_test{x})
-        plot(clasificacion_test{x}(1,:),clasificacion_test{x}(2,:), [colores(x) '*'])
+        plot(clasificacion_test{x}(1,:),clasificacion_test{x}(2,:), [colores(x) '^'])
         leyenda = [leyenda ['test set ' num2str(x)]];
     end
 
-    plot(parametros(x).media(1), parametros(x).media(2), '+k','linewidth',2);
-    leyenda = [leyenda ['media ' num2str(x)]];
-    
+%     plot(parametros(x).media(1), parametros(x).media(2), '+k','linewidth',2);
+%     leyenda = [leyenda ['media ' num2str(x)]];
+%     
 end
 
-legend(leyenda, 'Location','southeast');
+legend(leyenda, 'Location','best');
+
+%% ERRORES DETECTADOS
 
 disp(['Errores = ' num2str(errores)]);
 
+%% GRAFICO USANDO LOS GAMMA COMO CODIGO DE COLORES
 
 figure
 for i = 1:size(train_set,2)
@@ -240,6 +250,6 @@ end
 
 for i = 1:size(test_set,2)
     Gamma = calcular_gamma(parametros, test_set(:,i));
-    plot(test_set(1,i), test_set(2,i),'*','color',Gamma)
+    plot(test_set(1,i), test_set(2,i),'^','color',Gamma)
     hold on
 end

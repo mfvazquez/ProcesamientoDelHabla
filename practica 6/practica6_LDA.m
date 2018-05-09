@@ -54,14 +54,14 @@ y =  [cos(t') sin(t')];
 elipse = abs(chol(varianza))*y';
 
 figure
+hold on
+
 for x = 1:length(train_set)
 
     elipse_corrida = elipse + parametros(x).media;
     
     plot(train_set{x}(1,:),train_set{x}(2,:), [colores(x) 'o']) % train
-    hold on
     plot(test_set{x}(1,:),test_set{x}(2,:), [colores(x) '*']) % test
-    hold on;
     plot(elipse_corrida(1,:),elipse_corrida(2,:), colores(x)) %
 
     leyenda = [leyenda ['train ' archivos(x).name]];

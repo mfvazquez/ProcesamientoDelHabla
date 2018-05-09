@@ -60,11 +60,11 @@ for x = 1:length(clasificacion)
     medias(:,x) = calcular_media(clasificacion{x});
 end
 
+figure
 graficar_clasificacion(colores, clasificacion, medias);
-
+title(['clasificacion inicial'])
 
 %% INICIO DEL APRENDIZAJE
-
 % AGRUPO LOS TRAINSET A LAS MEDIAS MAS CERCANAS
 
 tolerancia = 1e-3;
@@ -87,14 +87,18 @@ while continuar
         continuar = false;
     end
    
+    figure
     graficar_clasificacion(colores, clasificacion, medias)
-    
+    title(['iteración numero ' num2str(n)])
+
 end
 
 %% DISTORSIÓN
 
 figure
 plot(distorsiones(2:end))
+title('distorsion')
+
 
 % CALCULO EL RESTO DE LOS PARAMETROS
 for x = 1:size(medias,2)
@@ -146,11 +150,17 @@ for x = 1:length(parametros)
         leyenda = [leyenda ['test set ' num2str(x)]];
     end
 
-%     plot(parametros(x).media(1), parametros(x).media(2), '+k');
-%     leyenda = [leyenda ['media ' num2str(x)]];
+end
 
+% Agrego las elipses  y medias
+for x = 1:length(parametros)
+    elipse = obtener_elipse(parametros(x).media, parametros(x).varianza);
+    plot(elipse(1,:),elipse(2,:), colores(x)) 
+
+    plot(parametros(x).media(1), parametros(x).media(2), '+k','linewidth',2);
 end
 
 legend(leyenda, 'Location','best');
+title(['clasificacion final con ' num2str(errores) ' errores'])
 
 disp(['Errores = ' num2str(errores)]);

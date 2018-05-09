@@ -65,42 +65,7 @@ end
 
 figure
 graficar_clasificacion(colores, clasificacion, medias);
-
-% subindice = 1;
-% formante = train_set(subindice,:);
-% minimo_formante = min(formante);
-% rango = max(formante)-minimo_formante;
-% 
-% formantes_limites(1) = minimo_formante + rango/(4*length(archivos)) + rand * rango/(length(archivos)*2);
-% 
-% continuar = true;
-% while continuar
-% 
-%     for x = 2:length(archivos)-1
-%         formantes_limites(x) = formantes_limites(1) + (rango/length(archivos)) *(x-1);
-%     end    
-%     formantes_limites = sort(formantes_limites, 'descend');
-%     
-%     % PRIMER CLASIFICACION DEL TRAINSET
-% 
-%     clasificacion = clasificar_lineal(formantes_limites(end:-1:1), train_set, subindice);
-%     clasificacion = clasificacion(end:-1:1);
-%     
-%     % si esta vacio un subespacio repito 
-%     continuar = false;
-%     for x = 1:length(clasificacion)
-%         if isempty(clasificacion{x})
-%             continuar = true;
-%         end
-%     end
-%     
-% end
-
-% for x = 1:length(clasificacion)
-%     medias(:,x) = calcular_media(clasificacion{x});
-% end
-% 
-% graficar_clasificacion(colores, clasificacion, medias);
+title(['clasificacion inicial'])
 
 % CALCULO PARAMETROS EN BASE A LA CLASIFICACION ALEATORIA
 for x = 1:length(clasificacion)
@@ -214,7 +179,11 @@ figure
 hold on;
 
 for x = 1:length(clasificacion_train)
-   
+
+    elipse = obtener_elipse(parametros(x).media, parametros(x).varianza);
+    plot(elipse(1,:),elipse(2,:), colores(x)) 
+    leyenda = [leyenda ['curva de nivel ' num2str(x)]];
+    
     plot(original{x}(1,:),original{x}(2,:), [colores(x) '.'], 'linewidth',3)
     leyenda = [leyenda ['original ' num2str(x)]];
     
@@ -227,13 +196,18 @@ for x = 1:length(clasificacion_train)
         plot(clasificacion_test{x}(1,:),clasificacion_test{x}(2,:), [colores(x) '^'])
         leyenda = [leyenda ['test set ' num2str(x)]];
     end
+end
 
-%     plot(parametros(x).media(1), parametros(x).media(2), '+k','linewidth',2);
-%     leyenda = [leyenda ['media ' num2str(x)]];
-%     
+% Agrego las elipses  y medias
+for x = 1:length(parametros)
+    elipse = obtener_elipse(parametros(x).media, parametros(x).varianza);
+    plot(elipse(1,:),elipse(2,:), colores(x)) 
+
+    plot(parametros(x).media(1), parametros(x).media(2), '+k','linewidth',2);
 end
 
 legend(leyenda, 'Location','best');
+title(['clasificacion final con ' num2str(errores) 'errores'])
 
 %% ERRORES DETECTADOS
 

@@ -98,6 +98,7 @@ end
 
 figure
 plot(likelihood)
+title('likelihood')
 
 %% CLASIFICO
 
@@ -140,13 +141,21 @@ for x = 1:length(bootstrap_set)
     
     plot(clasificacion_test{x}(1,:),clasificacion_test{x}(2,:), [colores(x) '^'])
     leyenda = [leyenda ['test set ' num2str(x)]];
-% 
-%     plot(parametros(x).media(1), parametros(x).media(2), '+k','linewidth',2);
-%     leyenda = [leyenda ['media ' num2str(x)]];
     
 end
 
+% Agrego las elipses  y medias
+for x = 1:length(parametros)
+    elipse = obtener_elipse(parametros(x).media, parametros(x).varianza);
+    plot(elipse(1,:),elipse(2,:), colores(x)) 
+
+    plot(parametros(x).media(1), parametros(x).media(2), '+k','linewidth',2);
+end
+
+
+
 legend(leyenda, 'Location','best');
+title(['clasificacion final con ' num2str(errores) ' errores'])
 
 %% ERRORES DETECTADOS
 
@@ -156,14 +165,14 @@ disp(['Errores = ' num2str(errores)]);
 
 
 figure
+hold on
 for i = 1:size(train_set,2)
     Gamma = calcular_gamma(parametros, train_set(:,i));
     plot(train_set(1,i), train_set(2,i),'o','color',Gamma)
-    hold on
 end
 
 for i = 1:size(test_set,2)
     Gamma = calcular_gamma(parametros, test_set(:,i));
     plot(test_set(1,i), test_set(2,i),'^','color',Gamma)
-    hold on
 end
+title('clasificacion usando gamma como codigo de colores')

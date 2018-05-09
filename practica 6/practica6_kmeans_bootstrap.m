@@ -39,7 +39,6 @@ end
 
 
 %% INICIO DEL APRENDIZAJE
-
 % AGRUPO LOS TRAINSET A LAS MEDIAS MÁS CERCANAS
 
 TOLERANCIA = 1e-3;
@@ -61,13 +60,14 @@ while true
     
     figure
     graficar_clasificacion(colores, clasificacion, medias)
+    title(['iteración numero ' num2str(n)])
 end
 
 %% GRAFICO DE LA DISTORSION EN CADA ITERACIÓN
 
 figure
 plot(distorsiones)
-
+title('distorsion')
 
 % CALCULO EL RESTO DE LOS PARAMETROS
 for x = 1:size(medias,2)
@@ -94,36 +94,29 @@ leyenda = {};
 figure
 hold on;
 
-%% GRAFICO LA DISTRIBUCIÓN ORIGINAL DE LOS ARCHIVOS
-
-
 for x = 1:length(bootstrap_set)
     plot(original{x}(1,:),original{x}(2,:), [colores(x) '.'], 'linewidth',3)
     leyenda = [leyenda ['original ' num2str(x)]];
-
     
-%     plot(bootstrap_set{x}(1,:),bootstrap_set{x}(2,:), [colores(x) 's']);
-%     leyenda = [leyenda ['bootstrap set ' num2str(x)]];
-%     
     plot(clasificacion_train{x}(1,:),clasificacion_train{x}(2,:), [colores(x) 'o'])
     leyenda = [leyenda ['train set ' num2str(x)]];
     
     plot(clasificacion_test{x}(1,:),clasificacion_test{x}(2,:), [colores(x) '^'])
     leyenda = [leyenda ['test set ' num2str(x)]];
-
-%     plot(parametros(x).media(1), parametros(x).media(2), '+k','linewidth',2);
-%     leyenda = [leyenda ['media ' num2str(x)]];
     
 end
 
-legend(leyenda, 'Location','best');
+for x = 1:length(bootstrap_set)
+    elipse = obtener_elipse(parametros(x).media, parametros(x).varianza);
+    plot(elipse(1,:),elipse(2,:), colores(x)) 
+
+    plot(parametros(x).media(1), parametros(x).media(2), '+k','linewidth',2);
+
+end
+
+title(['clasificacion final con ' num2str(errores) ' errores'])
+legend(leyenda, 'Location','northeast');
 
 %% CANTIDAD DE ERRORES DETECTADOS EN LOS TEST
 
 disp(['Errores = ' num2str(errores)]);
-
-% figure
-% for x = 1:length(bootstrap_set)
-%     plot(original{x}(1,:),original{x}(2,:), [colores(x) '^']);
-%     hold on;
-% end

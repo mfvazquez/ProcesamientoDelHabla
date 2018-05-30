@@ -113,6 +113,7 @@ end
 logTrans = logTrans(2:end-1,2:end-1);
 for t = 2:size(alpha,2)
     divisor = logsum(alpha(:,t-1) + beta(:,t-1));
+%     divisor = logsum(gamma(:,t));
     for k = 1:size(alpha,1)
         X = x(t,:)-means{k+1}';
         b = - 0.5 * (X * invSig{k+1}) * X' + logDetVars2(k+1);        
@@ -125,10 +126,11 @@ end
 % Verifico valores de xi
 for t = 1:size(xi,3)
     for k = 1:size(gamma,1)
-        resultado = logsum(xi(:,k,t))
-        gamma(k,t)
+        resultado = logsum(xi(k,:,t));
         if abs(resultado - gamma(k,t)) > TOLERANCIA
-            disp('ALTO ERROR WACHO')
+            msgID = 'XI:InconsistenciaValores';
+            msg = ['En el instante ' num2str(t) ' de la clase ' num2str(k) ' Xi no coincide con Gamma'];
+            throw(MException(msgID,msg));            
         end
     end
 end

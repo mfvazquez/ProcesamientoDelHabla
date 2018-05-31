@@ -25,9 +25,21 @@ trans = [0   1   0   0   0  ;...
          0   0   0   0   1  ];
 trans(trans<1e-100) = 1e-100;
 
-x = [];
-while length(x) < 100
+while true
     [x,stateSeq] = genhmm(hmm4);
+    
+    if length(x) < 100
+        continue
+    end
+
+    for z = 2:length(hmm2.means)-1
+        if sum(stateSeq == z) < 15
+            continue
+        end
+    end
+    
+    break
+    
 end
 train_set = x';
 
@@ -41,12 +53,16 @@ vars(2:end-1) = {varianza_inicial};
 
 TOLERANCIA = 1e-16;
 likelihood = [];
-for M = 1:5
+for M = 1:20
 
     %% OBTENGO GAMMA
 
     [alpha, beta, Gamma, xi] = ParametrosMarkov(means, vars, trans, x);
-    Gamma = exp(Gamma)';
+    Gamma = real(exp(Gamma))';
+    parametros_actuales.alpha = alpha;
+    parametros_actuales.beta = beta;
+    parametros_actuales.Gamma = Gamma;
+    parametros_actuales.xi = xi;
     
     %% RECALCULO PARAMETROS
 
@@ -68,9 +84,9 @@ for M = 1:5
         end
 
          var_actual = numerador/suma_gamma;
-         if rcond(var_actual) < TOLERANCIA
-             break
-         end
+%          if rcond(var_actual) < TOLERANCIA
+%              break
+%          end
          vars{k} = var_actual;
          
     end
@@ -79,11 +95,17 @@ for M = 1:5
     xi_normal = exp(xi);
     for j = 1:size(xi,1)
         for k = 1:size(xi,2)           
-            numerador = sum(xi(j,k,2:end));
-            denominador = sum(sum(xi(j,:,2:end)));
-            trans(j,k) = numerador/denominador;            
+            numerador = sum(xi_normal(j,k,2:end));
+            denominador = sum(sum(xi_normal(j,:,2:end)));
+            trans(j+1,k+1) = numerador/denominador;            
         end
     end
+    trans(end-1,end) = abs(1 - sum(trans(end-1,1:end-1)));
+    
+    parametros_actuales.trans = trans;
+    
+    viejos(M) = parametros_actuales;
+
     
     %% DIBUJAR COMO VA CATEGORIZANDO EN CADA ITERACION
 
@@ -97,7 +119,7 @@ for M = 1:5
 %         plot(x(t,1),x(t,2),'o','color',colores(clase(1)));
         aux = Gamma(t,:)*1000;
         aux = floor(aux)/1000;
-            plot(x(t,1),x(t,2), 'o', 'color', aux)
+        plot(x(t,1),x(t,2), 'o', 'color', aux)
     end
     
     

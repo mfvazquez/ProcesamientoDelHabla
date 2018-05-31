@@ -4,12 +4,9 @@ TOLERANCIA = 1e-6; % Tolerancia de error
 
 logTrans = log(trans);
 
-% logProb = logfwd(genhmm(hmm4.means,hmm4.vars,hmm4.trans),hmm4)
 numStates = length(means);
 nMinOne = numStates - 1;
 [numPts,dim] = size(x);
-
-
 
 %% CALCULO DE ALPHA
 
@@ -51,7 +48,6 @@ for t = numPts-1:-1:1
         X = x(t+1,:)-means{z}';
         b(z-1,1) = - 0.5 * (X * invSig{z}) * X' + logDetVars2(z);
     end
-    
     beta(i-1,t) = logsum( betaAfter + logTrans(i,2:nMinOne)'  + b );
   end
 end
@@ -92,7 +88,7 @@ end
 
 logTrans = logTrans(2:end-1,2:end-1);
 for t = 2:size(alpha,2)
-    divisor = logsum(alpha(:,t-1) + beta(:,t-1));
+    divisor = logsum(alpha(:,t) + beta(:,t));
 %     divisor = logsum(gamma(:,t));
     for k = 1:size(alpha,1)
         X = x(t,:)-means{k+1}';

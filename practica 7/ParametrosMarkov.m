@@ -1,3 +1,6 @@
+%% ParametrosMarkov
+% Función que obtiene los parámetros alpha, beta gamma y xi a partir de la
+% media, varianza, matriz de transición y la secuencia recibida.
 function [alpha, beta, gamma, xi] = ParametrosMarkov(means, vars, trans, x)
 
 TOLERANCIA = 1e-6; % Tolerancia de error

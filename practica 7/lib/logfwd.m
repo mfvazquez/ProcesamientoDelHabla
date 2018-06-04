@@ -36,17 +36,18 @@ end;
 % Initialize the alpha vector for the emitting states
 for i=2:nMinOne,
   X = x(1,:)-means{i}';
-  alpha(i) = logTrans(1,i) - 0.5 * (X * invSig{i}) * X' + logDetVars2(i);
+  alpha(i) = logTrans(1,i) ...
+      - 0.5 * (X * invSig{i}) * X' + logDetVars2(i);
 end;
-alpha = alpha(:) %% alfa 1
+alpha = alpha(:);
 
 % Do the forward recursion
 for t = 2:numPts,
   alphaBefore = alpha;
   for i = 2:nMinOne,
     X = x(t,:)-means{i}';
-    b = - 0.5 * (X * invSig{i}) * X' + logDetVars2(i);
-    alpha(i) = logsum( alphaBefore(2:nMinOne) + logTrans(2:nMinOne,i) ) + b;
+    alpha(i) = logsum( alphaBefore(2:nMinOne) + logTrans(2:nMinOne,i) ) ...
+	- 0.5 * (X * invSig{i}) * X' + logDetVars2(i);
   end;
 end;
 
